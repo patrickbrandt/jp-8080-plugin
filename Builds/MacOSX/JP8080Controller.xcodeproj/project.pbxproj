@@ -102,6 +102,7 @@
 		C7693E7DF8FC73FA8E8E56EA /* CoreMIDI.framework */ /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 		C79D06EB0FC4A78CCB7B16E9 /* AU */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JP8080Controller.component; sourceTree = BUILT_PRODUCTS_DIR; };
 		C82ADB43E2FE5D514E8B4124 /* include_juce_audio_utils.mm */ /* include_juce_audio_utils.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_utils.mm; path = ../../JuceLibraryCode/include_juce_audio_utils.mm; sourceTree = SOURCE_ROOT; };
+		CA2BBEBF391C4BF1443104B4 /* JP8080Parameters.h */ /* JP8080Parameters.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JP8080Parameters.h; path = ../../Source/JP8080Parameters.h; sourceTree = SOURCE_ROOT; };
 		CBAAAE56F8E664868752C594 /* Foundation.framework */ /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		CBB0569B870392593826E66F /* Security.framework */ /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		D6DF708E17CC269B86756A9E /* Cocoa.framework */ /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -254,6 +255,7 @@
 				E2CB322E94B2994D8F9B8983,
 				63F8FAEA4814773688568E1F,
 				F2046DF0413345BBD2746421,
+				CA2BBEBF391C4BF1443104B4,
 			);
 			name = Source;
 			sourceTree = "<group>";
