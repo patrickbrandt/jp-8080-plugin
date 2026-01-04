@@ -92,6 +92,37 @@
 - Clear separation between audio and MIDI processing
 - Documented for future parameter integration
 
+### Step 4: Set up Xcode Build Schemes for AU ✓
+
+**Date**: January 4, 2026
+
+**Build Configuration**:
+
+1. **Available Schemes**:
+   - JP8080Controller - All
+   - JP8080Controller - AU
+   - JP8080Controller - Standalone Plugin
+   - JP8080Controller - VST3
+
+2. **Build Process**:
+   - Used `xcodebuild` command-line tool
+   - Built AU scheme in Debug configuration
+   - Command: `xcodebuild -project Builds/MacOSX/JP8080Controller.xcodeproj -scheme "JP8080Controller - AU" -configuration Debug clean build`
+
+3. **Build Results**:
+   - Build succeeded with no errors
+   - AU component installed to: `~/Library/Audio/Plug-Ins/Components/JP8080Controller.component`
+   - Plugin automatically code-signed with "Sign to Run Locally"
+
+4. **Plugin Information**:
+   - Plugin Name: JP-8080 Controller
+   - Manufacturer: PatrickBrandt
+   - Type: Audio Unit MIDI Effect (aumi)
+   - Version: 0.1.0
+
+**Verification**:
+- AU component file exists and is valid
+- Plugin ready for Logic Pro testing
+
 **Next Steps**:
-- Set up Xcode build schemes for AU
 - Test basic plugin loading in Logic Pro
