@@ -20,6 +20,8 @@
       <FILE id="Kd9pLm" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="Nm3wRt" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="Jp80Pm" name="JP8080Parameters.h" compile="0" resource="0"
+            file="Source/JP8080Parameters.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

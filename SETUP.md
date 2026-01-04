@@ -183,3 +183,71 @@ To test the plugin in Logic Pro:
 - Plugin is a MIDI Effect type (processes MIDI, not audio)
 - No parameters implemented yet (Phase 2)
 - Basic UI placeholder active (full UI in Phase 4)
+
+---
+
+## Phase 2: Parameter System
+
+### Step 1: Define All JP-8080 Parameters with CC Mappings ✓
+
+**Date**: January 4, 2026
+
+**Parameter Definition File Created**: `Source/JP8080Parameters.h`
+
+**CC-Controllable Parameters Defined**: 45 total
+
+1. **Oscillator Section** (9 parameters):
+   - OSC1 Control 1 (CC#4), Control 2 (CC#76)
+   - OSC2 Range (CC#21), Fine/Wide (CC#77), Control 1 (CC#78), Control 2 (CC#79)
+   - OSC Balance (CC#8), X-Mod Depth (CC#70), OSC LFO1 Depth (CC#18)
+
+2. **Pitch Envelope Section** (3 parameters):
+   - Depth (CC#25), Attack (CC#26), Decay (CC#27)
+
+3. **Filter Section** (9 parameters):
+   - Cutoff (CC#74), Resonance (CC#71), Key Follow (CC#30), LFO1 Depth (CC#19)
+   - Env Depth (CC#81), Attack (CC#82), Decay (CC#83), Sustain (CC#28), Release (CC#29)
+
+4. **Amplifier Section** (6 parameters):
+   - Level (CC#7), LFO1 Depth (CC#80)
+   - Env Attack (CC#73), Decay (CC#75), Sustain (CC#31), Release (CC#72)
+
+5. **LFO Section** (6 parameters):
+   - LFO1 Rate (CC#16), Fade (CC#20)
+   - LFO2 Rate (CC#17), Pitch Depth (CC#22), Filter Depth (CC#23), Amp Depth (CC#24)
+
+6. **Effects Section** (6 parameters):
+   - Tone Control Bass (CC#92), Treble (CC#95)
+   - Multi-FX Level (CC#93), Delay Time (CC#12), Feedback (CC#13), Level (CC#94)
+
+7. **Control Section** (6 parameters):
+   - Portamento Time (CC#5), Switch (CC#65)
+   - Hold 1/Sustain (CC#64), Modulation (CC#1), Expression (CC#11), Pan (CC#10)
+
+**Implementation Details**:
+- Parameters organized by JP-8080 panel sections using namespaces
+- CC number mapping table for MIDI message generation
+- Display name table for UI labels
+- Helper functions: `getCCNumber()`, `getDisplayName()`, `getAllParameterIDs()`
+- Based on MODE2 Tx/Rx settings for maximum CC control
+
+**Excluded Parameters**:
+- Filter Type and Slope (SysEx-only, no CC control)
+- Waveform selections (SysEx-only, no CC control)
+- Other patch-level parameters requiring SysEx
+
+**File Structure**:
+```cpp
+namespace JP8080Parameters {
+    namespace Oscillator { ... }
+    namespace PitchEnv { ... }
+    namespace Filter { ... }
+    namespace Amplifier { ... }
+    namespace LFO { ... }
+    namespace Effects { ... }
+    namespace Control { ... }
+}
+```
+
+**Next Steps**:
+- Create parameter value ranges matching JP-8080 specs (0-127)
