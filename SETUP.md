@@ -512,5 +512,83 @@ All 5 steps of Phase 2 successfully implemented:
 - Compiled successfully
 - AU component updated
 
+### Step 3: Implement Bank Select + Program Change Sequences ✓
+
+**Date**: January 4, 2026
+
+**Patch Selection Implementation**
+
+**Objective**: Enable users to select JP-8080 patches via Bank Select and Program Change MIDI messages.
+
+**Implementation**:
+
+1. **Added Patch Bank Parameter**:
+   - Parameter ID: `patch_bank`
+   - Type: `AudioParameterChoice` (dropdown selection)
+   - Options: 8 banks available
+     - User A (11-88), User B (11-88)
+     - Preset 1 A (11-88), Preset 1 B (11-88)
+     - Preset 2 A (11-88), Preset 2 B (11-88)
+     - Preset 3 A (11-88), Preset 3 B (11-88)
+   - Default: User A
+
+2. **Added Patch Program Parameter**:
+   - Parameter ID: `patch_program`
+   - Type: `AudioParameterInt`
+   - Range: 1-64 (maps to JP-8080's 11-88 display format)
+   - Default: 1
+
+3. **Bank Select Mapping Table**:
+   ```cpp
+   struct BankSelectInfo {
+       int bankMSB;        // CC#0
+       int bankLSB;        // CC#32
+       int programOffset;  // Offset for program number
+   };
+   ```
+   - User A/B: MSB=80, LSB=0, offset=0/64
+   - Preset 1 A/B: MSB=81, LSB=0, offset=0/64
+   - Preset 2 A/B: MSB=81, LSB=1, offset=0/64
+   - Preset 3 A/B: MSB=81, LSB=2, offset=0/64
+
+4. **MIDI Message Sequence**:
+   - Sends Bank Select MSB (CC#0)
+   - Sends Bank Select LSB (CC#32)
+   - Sends Program Change (0-127)
+   - Proper timing: all sent in same audio buffer
+
+5. **Change Detection**:
+   - Tracks last sent bank and program
+   - Only sends when bank or program changes
+   - Prevents redundant MIDI traffic
+
+**Code Implementation**:
+```cpp
+void sendBankSelectAndProgramChange(buffer, bank, program, channel) {
+    auto bankInfo = getBankSelectInfo(bank);
+    sendMidiCC(buffer, 0, bankInfo.bankMSB, channel);      // Bank MSB
+    sendMidiCC(buffer, 32, bankInfo.bankLSB, channel);     // Bank LSB
+    sendProgramChange(buffer, program + offset, channel);  // Program
+}
+```
+
+**Benefits**:
+- ✅ Select any JP-8080 patch from plugin
+- ✅ Bank and program automatable in Logic Pro
+- ✅ Proper Bank Select + PC sequence sent
+- ✅ Supports all 512 patches (User + Presets)
+- ✅ Change detection prevents redundant sends
+
+**Usage Example**:
+1. Set Bank to "Preset 1 A"
+2. Set Program to 15
+3. Plugin sends: CC#0=81, CC#32=0, PC=14
+4. JP-8080 loads Preset 1 A patch 25 (displayed as 1-25)
+
+**Build Status**:
+- Compiled successfully
+- Total parameters: 48 (45 CC + 3 MIDI config)
+
 **Next Steps**:
-- Implement Bank Select + Program Change sequences
+- Add SysEx support (optional)
+- Handle MIDI device selection/routing

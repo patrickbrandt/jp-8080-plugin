@@ -92,6 +92,57 @@ namespace JP8080Parameters
     namespace MidiConfig
     {
         static const juce::String midiChannel     = "midi_channel";      // MIDI channel (1-16)
+        static const juce::String patchBank       = "patch_bank";        // Patch bank selection
+        static const juce::String patchProgram    = "patch_program";     // Program number (1-128)
+    }
+
+    // ========== PATCH BANK DEFINITIONS ==========
+    enum class PatchBank
+    {
+        UserA = 0,      // CC#0=80, CC#32=0, PC=0-63
+        UserB,          // CC#0=80, CC#32=0, PC=64-127
+        Preset1A,       // CC#0=81, CC#32=0, PC=0-63
+        Preset1B,       // CC#0=81, CC#32=0, PC=64-127
+        Preset2A,       // CC#0=81, CC#32=1, PC=0-63
+        Preset2B,       // CC#0=81, CC#32=1, PC=64-127
+        Preset3A,       // CC#0=81, CC#32=2, PC=0-63
+        Preset3B        // CC#0=81, CC#32=2, PC=64-127
+    };
+
+    // Bank names for display
+    static const juce::StringArray patchBankNames = {
+        "User A (11-88)",
+        "User B (11-88)",
+        "Preset 1 A (11-88)",
+        "Preset 1 B (11-88)",
+        "Preset 2 A (11-88)",
+        "Preset 2 B (11-88)",
+        "Preset 3 A (11-88)",
+        "Preset 3 B (11-88)"
+    };
+
+    // Helper to get Bank Select MSB/LSB and Program offset for a bank
+    struct BankSelectInfo
+    {
+        int bankMSB;        // CC#0
+        int bankLSB;        // CC#32
+        int programOffset;  // Offset to add to program number
+    };
+
+    inline BankSelectInfo getBankSelectInfo(PatchBank bank)
+    {
+        switch (bank)
+        {
+            case PatchBank::UserA:     return {80, 0, 0};
+            case PatchBank::UserB:     return {80, 0, 64};
+            case PatchBank::Preset1A:  return {81, 0, 0};
+            case PatchBank::Preset1B:  return {81, 0, 64};
+            case PatchBank::Preset2A:  return {81, 1, 0};
+            case PatchBank::Preset2B:  return {81, 1, 64};
+            case PatchBank::Preset3A:  return {81, 2, 0};
+            case PatchBank::Preset3B:  return {81, 2, 64};
+            default:                   return {80, 0, 0};
+        }
     }
 
     // ========== CC NUMBER MAPPINGS ==========
@@ -219,7 +270,9 @@ namespace JP8080Parameters
         {Control::pan,                "Pan"},
 
         // MIDI Configuration
-        {MidiConfig::midiChannel,     "MIDI Channel"}
+        {MidiConfig::midiChannel,     "MIDI Channel"},
+        {MidiConfig::patchBank,       "Patch Bank"},
+        {MidiConfig::patchProgram,    "Patch Program"}
     };
 
     // Helper function to get CC number for a parameter ID
@@ -276,8 +329,10 @@ namespace JP8080Parameters
     // Helper function to check if parameter is a MIDI configuration (not a CC parameter)
     inline bool isMidiConfigParameter(const juce::String& paramID)
     {
-        return paramID == MidiConfig::midiChannel;
+        return paramID == MidiConfig::midiChannel ||
+               paramID == MidiConfig::patchBank ||
+               paramID == MidiConfig::patchProgram;
     }
 
-    // Total: 45 CC-controllable parameters + 1 MIDI config parameter = 46 total
+    // Total: 45 CC-controllable parameters + 3 MIDI config parameters = 48 total
 }

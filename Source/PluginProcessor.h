@@ -64,10 +64,13 @@ private:
 
     // Track last sent parameter values to avoid redundant MIDI messages
     std::map<juce::String, int> lastSentValues;
+    int lastSentBank = -1;
+    int lastSentProgram = -1;
 
     //==============================================================================
-    // Helper method to send MIDI CC messages
+    // Helper methods for MIDI output
     void sendMidiCC (juce::MidiBuffer& midiMessages, int ccNumber, int value, int channel);
+    void sendBankSelectAndProgramChange (juce::MidiBuffer& midiMessages, int bank, int program, int channel);
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JP8080ControllerAudioProcessor)

@@ -129,8 +129,7 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // MIDI output processing - Send parameter changes as MIDI CC messages
-    // Only send CC when parameter values have changed to avoid flooding MIDI output
+    // MIDI output processing
     using namespace JP8080Parameters;
 
     // Get current MIDI channel from parameter (1-16)
@@ -138,6 +137,26 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     int currentMidiChannel = channelParam != nullptr ?
         static_cast<int>(channelParam->getValue() * 15.0f) + 1 : 1; // Convert 0.0-1.0 to 1-16
 
+    // Check for Bank Select + Program Change
+    auto* bankParam = apvts.getParameter(MidiConfig::patchBank);
+    auto* programParam = apvts.getParameter(MidiConfig::patchProgram);
+
+    if (bankParam != nullptr && programParam != nullptr)
+    {
+        int currentBank = static_cast<int>(bankParam->getValue() * (patchBankNames.size() - 1));
+        int currentProgram = static_cast<int>(programParam->getValue() * 63.0f) + 1; // Convert to 1-64
+
+        // Check if bank or program has changed
+        if (currentBank != lastSentBank || currentProgram != lastSentProgram)
+        {
+            sendBankSelectAndProgramChange(midiMessages, currentBank, currentProgram, currentMidiChannel);
+            lastSentBank = currentBank;
+            lastSentProgram = currentProgram;
+        }
+    }
+
+    // Send parameter changes as MIDI CC messages
+    // Only send CC when parameter values have changed to avoid flooding MIDI output
     for (const auto& paramID : getAllParameterIDs())
     {
         auto* param = apvts.getParameter(paramID);
@@ -263,11 +282,24 @@ JP8080ControllerAudioProcessor::createParameterLayout()
     layout.add(createStandardParam(Control::pan, getDisplayName(Control::pan), 64.0f));
 
     // MIDI CONFIGURATION
-    // MIDI Channel: 1-16 (stored internally as 0-15, displayed as 1-16)
+    // MIDI Channel: 1-16
     layout.add(std::make_unique<juce::AudioParameterInt>(
         MidiConfig::midiChannel,
         getDisplayName(MidiConfig::midiChannel),
         1, 16, 1)); // Range: 1-16, default: 1
+
+    // Patch Bank Selection
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        MidiConfig::patchBank,
+        getDisplayName(MidiConfig::patchBank),
+        patchBankNames,
+        0)); // Default: User A
+
+    // Patch Program: 1-64 (JP-8080 displays as 11-88)
+    layout.add(std::make_unique<juce::AudioParameterInt>(
+        MidiConfig::patchProgram,
+        getDisplayName(MidiConfig::patchProgram),
+        1, 64, 1)); // Range: 1-64, default: 1
 
     return layout;
 }
@@ -308,6 +340,34 @@ void JP8080ControllerAudioProcessor::sendMidiCC (juce::MidiBuffer& midiMessages,
 
     // Add to MIDI buffer at sample position 0
     midiMessages.addEvent (message, 0);
+}
+
+void JP8080ControllerAudioProcessor::sendBankSelectAndProgramChange (juce::MidiBuffer& midiMessages,
+                                                                       int bankIndex, int program, int channel)
+{
+    using namespace JP8080Parameters;
+
+    // Get bank select info for the selected bank
+    auto bank = static_cast<PatchBank>(juce::jlimit(0, 7, bankIndex));
+    auto bankInfo = getBankSelectInfo(bank);
+
+    // Ensure values are in valid MIDI range
+    channel = juce::jlimit (1, 16, channel);
+    program = juce::jlimit (1, 64, program); // User programs 1-64
+
+    // Calculate actual MIDI program number (0-63) with bank offset
+    int midiProgram = (program - 1) + bankInfo.programOffset;
+    midiProgram = juce::jlimit (0, 127, midiProgram);
+
+    // Send Bank Select MSB (CC#0)
+    sendMidiCC(midiMessages, 0, bankInfo.bankMSB, channel);
+
+    // Send Bank Select LSB (CC#32)
+    sendMidiCC(midiMessages, 32, bankInfo.bankLSB, channel);
+
+    // Send Program Change
+    auto pcMessage = juce::MidiMessage::programChange(channel - 1, midiProgram);
+    midiMessages.addEvent(pcMessage, 0);
 }
 
 //==============================================================================
