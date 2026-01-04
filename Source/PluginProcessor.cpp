@@ -133,6 +133,11 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     // Only send CC when parameter values have changed to avoid flooding MIDI output
     using namespace JP8080Parameters;
 
+    // Get current MIDI channel from parameter (1-16)
+    auto* channelParam = apvts.getParameter(MidiConfig::midiChannel);
+    int currentMidiChannel = channelParam != nullptr ?
+        static_cast<int>(channelParam->getValue() * 15.0f) + 1 : 1; // Convert 0.0-1.0 to 1-16
+
     for (const auto& paramID : getAllParameterIDs())
     {
         auto* param = apvts.getParameter(paramID);
@@ -153,8 +158,8 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
 
                 if (ccNumber >= 0 && ccNumber <= 127)
                 {
-                    // Send the MIDI CC message
-                    sendMidiCC(midiMessages, ccNumber, midiValue, midiChannel);
+                    // Send the MIDI CC message using the selected MIDI channel
+                    sendMidiCC(midiMessages, ccNumber, midiValue, currentMidiChannel);
 
                     // Update last sent value
                     lastSentValues[paramID] = midiValue;
@@ -257,6 +262,13 @@ JP8080ControllerAudioProcessor::createParameterLayout()
     layout.add(createStandardParam(Control::expression, getDisplayName(Control::expression), 127.0f));
     layout.add(createStandardParam(Control::pan, getDisplayName(Control::pan), 64.0f));
 
+    // MIDI CONFIGURATION
+    // MIDI Channel: 1-16 (stored internally as 0-15, displayed as 1-16)
+    layout.add(std::make_unique<juce::AudioParameterInt>(
+        MidiConfig::midiChannel,
+        getDisplayName(MidiConfig::midiChannel),
+        1, 16, 1)); // Range: 1-16, default: 1
+
     return layout;
 }
 
@@ -280,13 +292,7 @@ void JP8080ControllerAudioProcessor::setStateInformation (const void* data, int 
 }
 
 //==============================================================================
-// MIDI Configuration Methods
-
-void JP8080ControllerAudioProcessor::setMidiChannel (int channel)
-{
-    // Ensure channel is in valid range (1-16)
-    midiChannel = juce::jlimit (1, 16, channel);
-}
+// MIDI Output Methods
 
 void JP8080ControllerAudioProcessor::sendMidiCC (juce::MidiBuffer& midiMessages,
                                                    int ccNumber, int value, int channel)

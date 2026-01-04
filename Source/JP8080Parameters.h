@@ -88,6 +88,12 @@ namespace JP8080Parameters
         static const juce::String pan             = "pan";               // CC#10
     }
 
+    // ========== MIDI CONFIGURATION ==========
+    namespace MidiConfig
+    {
+        static const juce::String midiChannel     = "midi_channel";      // MIDI channel (1-16)
+    }
+
     // ========== CC NUMBER MAPPINGS ==========
     // Map parameter IDs to MIDI CC numbers
     static const std::map<juce::String, int> ccNumbers = {
@@ -210,7 +216,10 @@ namespace JP8080Parameters
         {Control::hold1,              "Hold 1 (Sustain)"},
         {Control::modulation,         "Modulation"},
         {Control::expression,         "Expression"},
-        {Control::pan,                "Pan"}
+        {Control::pan,                "Pan"},
+
+        // MIDI Configuration
+        {MidiConfig::midiChannel,     "MIDI Channel"}
     };
 
     // Helper function to get CC number for a parameter ID
@@ -264,5 +273,11 @@ namespace JP8080Parameters
         };
     }
 
-    // Total: 45 CC-controllable parameters
+    // Helper function to check if parameter is a MIDI configuration (not a CC parameter)
+    inline bool isMidiConfigParameter(const juce::String& paramID)
+    {
+        return paramID == MidiConfig::midiChannel;
+    }
+
+    // Total: 45 CC-controllable parameters + 1 MIDI config parameter = 46 total
 }

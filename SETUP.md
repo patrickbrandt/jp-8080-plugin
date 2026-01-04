@@ -442,3 +442,75 @@ All 5 steps of Phase 2 successfully implemented:
 - Build verified successful
 
 **Next Phase**: Phase 3 - MIDI Output (additional features) or Phase 4 - User Interface
+
+---
+
+## Phase 3: MIDI Output
+
+### Step 1: MIDI CC Output Functionality ✓
+
+**Status**: Completed in Phase 2, Step 3
+
+### Step 2: Add MIDI Channel Selection ✓
+
+**Date**: January 4, 2026
+
+**MIDI Channel Parameter Implementation**
+
+**Objective**: Allow users to select which MIDI channel (1-16) to send CC messages to, supporting JP-8080's Upper/Lower part configuration.
+
+**Implementation**:
+
+1. **Added MIDI Channel Parameter**:
+   - Parameter ID: `midi_channel`
+   - Range: 1-16 (MIDI standard channels)
+   - Default: Channel 1
+   - Type: `AudioParameterInt` for discrete channel selection
+   - Included in APVTS for automation and state persistence
+
+2. **Updated Parameter System**:
+   - Added `MidiConfig` namespace in JP8080Parameters.h
+   - Helper function `isMidiConfigParameter()` to distinguish config from CC parameters
+   - Display name: "MIDI Channel"
+   - Total parameters now: 46 (45 CC + 1 MIDI config)
+
+3. **Process Block Integration**:
+   - Reads current MIDI channel from parameter each audio cycle
+   - Converts normalized value (0.0-1.0) to MIDI channel (1-16)
+   - Uses selected channel for all outgoing CC messages
+   - Dynamic channel switching without interruption
+
+4. **Code Changes**:
+   ```cpp
+   // Get current MIDI channel from parameter
+   auto* channelParam = apvts.getParameter(MidiConfig::midiChannel);
+   int currentMidiChannel = channelParam != nullptr ?
+       static_cast<int>(channelParam->getValue() * 15.0f) + 1 : 1;
+
+   // Use selected channel for CC output
+   sendMidiCC(midiMessages, ccNumber, midiValue, currentMidiChannel);
+   ```
+
+5. **Removed Legacy Code**:
+   - Removed hardcoded `midiChannel` member variable
+   - Removed `setMidiChannel()` and `getMidiChannel()` methods
+   - All MIDI channel management now via parameter system
+
+**Benefits**:
+- ✅ Users can select MIDI channel via parameter
+- ✅ Channel selection automatable in Logic Pro
+- ✅ Channel changes apply immediately to all CC output
+- ✅ Supports JP-8080 Upper/Lower part on different channels
+- ✅ Channel setting persists with project
+
+**JP-8080 Usage**:
+- Set plugin to Channel 1 → controls Upper part (if Upper set to Ch. 1)
+- Set plugin to Channel 2 → controls Lower part (if Lower set to Ch. 2)
+- Can automate channel switching to control different parts
+
+**Build Status**:
+- Compiled successfully
+- AU component updated
+
+**Next Steps**:
+- Implement Bank Select + Program Change sequences

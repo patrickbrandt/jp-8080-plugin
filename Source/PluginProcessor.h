@@ -51,11 +51,6 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    // MIDI Configuration
-    void setMidiChannel (int channel);
-    int getMidiChannel() const { return midiChannel; }
-
-    //==============================================================================
     // Parameter access
     juce::AudioProcessorValueTreeState& getValueTreeState() { return apvts; }
 
@@ -71,9 +66,6 @@ private:
     std::map<juce::String, int> lastSentValues;
 
     //==============================================================================
-    // MIDI output configuration
-    int midiChannel = 1;  // Default MIDI channel (1-16)
-
     // Helper method to send MIDI CC messages
     void sendMidiCC (juce::MidiBuffer& midiMessages, int ccNumber, int value, int channel);
 
