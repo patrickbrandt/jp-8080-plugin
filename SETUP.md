@@ -294,5 +294,59 @@ namespace JP8080Parameters {
 - Compiled successfully
 - AU component updated and installed
 
+### Step 3: Implement Bidirectional Parameter Binding ✓
+
+**Date**: January 4, 2026
+
+**Parameter → MIDI CC Binding Implementation**
+
+**Objective**: Automatically send MIDI CC messages when parameter values change
+
+**Implementation**:
+
+1. **Change Detection System**:
+   - Added `std::map<juce::String, int> lastSentValues` to track parameter states
+   - Prevents redundant MIDI messages by only sending when values actually change
+   - Efficient: avoids flooding MIDI output with duplicate CC messages
+
+2. **Process Block Integration**:
+   - Modified `processBlock()` to check all 45 parameters each audio cycle
+   - For each parameter:
+     - Retrieve current value (normalized 0.0-1.0)
+     - Convert to MIDI range (0-127)
+     - Compare with last sent value
+     - Send MIDI CC only if value changed
+     - Update last sent value cache
+
+3. **MIDI CC Message Generation**:
+   - Uses existing `sendMidiCC()` helper method
+   - Looks up CC number via `getCCNumber(paramID)`
+   - Validates CC number (0-127)
+   - Sends to configured MIDI channel (default: 1)
+
+4. **Value Conversion**:
+   ```cpp
+   float normalizedValue = param->getValue();  // 0.0-1.0
+   int midiValue = static_cast<int>(normalizedValue * 127.0f);  // 0-127
+   ```
+
+**Behavior**:
+- ✅ UI parameter changes → MIDI CC sent to JP-8080
+- ✅ Automation changes → MIDI CC sent to JP-8080
+- ✅ Preset recalls → All changed parameters send CCs
+- ✅ Efficient: Only sends when values change (no redundant messages)
+- ✅ Real-time: Changes processed every audio buffer cycle
+
+**Example Flow**:
+1. User adjusts "Filter Cutoff" knob in UI
+2. Parameter value changes from 64 → 80
+3. Process block detects change
+4. Sends MIDI CC#74 value 80 to JP-8080
+5. JP-8080 filter cutoff opens in real-time
+
+**Build Status**:
+- Compiled successfully
+- AU component updated
+
 **Next Steps**:
-- Implement bidirectional parameter binding (parameters → MIDI CC output)
+- Add parameter smoothing for real-time control

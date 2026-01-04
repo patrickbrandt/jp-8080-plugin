@@ -129,12 +129,39 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // MIDI output processing
-    // The midiMessages buffer is where we'll add MIDI CC messages to send to the JP-8080
-    // Parameter changes will trigger MIDI CC messages (to be implemented in Phase 2)
+    // MIDI output processing - Send parameter changes as MIDI CC messages
+    // Only send CC when parameter values have changed to avoid flooding MIDI output
+    using namespace JP8080Parameters;
 
-    // For now, this is ready to accept and pass through MIDI messages
-    // MIDI CC generation will be added when parameters are implemented
+    for (const auto& paramID : getAllParameterIDs())
+    {
+        auto* param = apvts.getParameter(paramID);
+        if (param != nullptr)
+        {
+            // Get normalized value (0.0-1.0) and convert to MIDI range (0-127)
+            float normalizedValue = param->getValue();
+            int midiValue = static_cast<int>(normalizedValue * 127.0f);
+
+            // Check if value has changed since last sent
+            auto it = lastSentValues.find(paramID);
+            bool valueChanged = (it == lastSentValues.end()) || (it->second != midiValue);
+
+            if (valueChanged)
+            {
+                // Get the CC number for this parameter
+                int ccNumber = getCCNumber(paramID);
+
+                if (ccNumber >= 0 && ccNumber <= 127)
+                {
+                    // Send the MIDI CC message
+                    sendMidiCC(midiMessages, ccNumber, midiValue, midiChannel);
+
+                    // Update last sent value
+                    lastSentValues[paramID] = midiValue;
+                }
+            }
+        }
+    }
 }
 
 //==============================================================================

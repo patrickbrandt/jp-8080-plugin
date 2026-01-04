@@ -67,6 +67,9 @@ private:
     // Create parameter layout for APVTS
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
+    // Track last sent parameter values to avoid redundant MIDI messages
+    std::map<juce::String, int> lastSentValues;
+
     //==============================================================================
     // MIDI output configuration
     int midiChannel = 1;  // Default MIDI channel (1-16)
