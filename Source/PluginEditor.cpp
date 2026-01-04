@@ -8,7 +8,7 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     using namespace JP8080Parameters;
 
     // Set larger window size for full control layout
-    setSize (900, 650);
+    setSize (900, 600);
 
     // Apply custom LookAndFeel
     setLookAndFeel(&jp8080LookAndFeel);
@@ -48,18 +48,22 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     updatePatchNamesForCurrentBank();
 
     // Oscillator Section
-    createRotaryKnob(osc1Control1Knob, osc1Control1Label, Oscillator::osc1Control1, "OSC1 Ctrl1");
-    createRotaryKnob(osc1Control2Knob, osc1Control2Label, Oscillator::osc1Control2, "OSC1 Ctrl2");
-    createRotaryKnob(osc2RangeKnob, osc2RangeLabel, Oscillator::osc2Range, "OSC2 Range");
-    createRotaryKnob(osc2FineKnob, osc2FineLabel, Oscillator::osc2FineWide, "OSC2 Fine");
+    createRotaryKnob(osc1Control1Knob, osc1Control1Label, Oscillator::osc1Control1, "Ctrl 1");
+    createRotaryKnob(osc1Control2Knob, osc1Control2Label, Oscillator::osc1Control2, "Ctrl 2");
+    createRotaryKnob(osc2RangeKnob, osc2RangeLabel, Oscillator::osc2Range, "Range");
+    createRotaryKnob(osc2FineKnob, osc2FineLabel, Oscillator::osc2FineWide, "Fine");
+    createRotaryKnob(osc2Control1Knob, osc2Control1Label, Oscillator::osc2Control1, "Ctrl 1");
+    createRotaryKnob(osc2Control2Knob, osc2Control2Label, Oscillator::osc2Control2, "Ctrl 2");
     createRotaryKnob(oscBalanceKnob, oscBalanceLabel, Oscillator::oscBalance, "Balance");
     createRotaryKnob(xModDepthKnob, xModDepthLabel, Oscillator::xModDepth, "X-Mod");
+    createRotaryKnob(oscLfo1DepthKnob, oscLfo1DepthLabel, Oscillator::oscLfo1Depth, "LFO Dpt");
 
     // Filter Section
     createRotaryKnob(filterCutoffKnob, filterCutoffLabel, Filter::cutoff, "Cutoff");
-    createRotaryKnob(filterResonanceKnob, filterResonanceLabel, Filter::resonance, "Resonance");
-    createRotaryKnob(filterKeyFollowKnob, filterKeyFollowLabel, Filter::keyFollow, "Key Follow");
-    createRotaryKnob(filterEnvDepthKnob, filterEnvDepthLabel, Filter::envDepth, "Env Depth");
+    createRotaryKnob(filterResonanceKnob, filterResonanceLabel, Filter::resonance, "Reso");
+    createRotaryKnob(filterKeyFollowKnob, filterKeyFollowLabel, Filter::keyFollow, "Key Fol");
+    createRotaryKnob(filterLfo1DepthKnob, filterLfo1DepthLabel, Filter::lfo1Depth, "LFO Dpt");
+    createRotaryKnob(filterEnvDepthKnob, filterEnvDepthLabel, Filter::envDepth, "Depth");
 
     // Filter Envelope
     createRotaryKnob(filterAttackKnob, filterAttackLabel, Filter::envAttack, "Attack");
@@ -75,15 +79,23 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     createRotaryKnob(ampReleaseKnob, ampReleaseLabel, Amplifier::envRelease, "Release");
 
     // LFO Section
-    createRotaryKnob(lfo1RateKnob, lfo1RateLabel, LFO::lfo1Rate, "LFO1 Rate");
-    createRotaryKnob(lfo1FadeKnob, lfo1FadeLabel, LFO::lfo1Fade, "LFO1 Fade");
-    createRotaryKnob(lfo2RateKnob, lfo2RateLabel, LFO::lfo2Rate, "LFO2 Rate");
+    createRotaryKnob(lfo1RateKnob, lfo1RateLabel, LFO::lfo1Rate, "Rate");
+    createRotaryKnob(lfo1FadeKnob, lfo1FadeLabel, LFO::lfo1Fade, "Fade");
+    createRotaryKnob(lfo2RateKnob, lfo2RateLabel, LFO::lfo2Rate, "Rate");
+    createRotaryKnob(lfo2DepthKnob, lfo2DepthLabel, LFO::lfo2PitchDepth, "Depth");
+
+    // Pitch Envelope Section
+    createRotaryKnob(pitchEnvDepthKnob, pitchEnvDepthLabel, PitchEnv::depth, "Depth");
+    createRotaryKnob(pitchEnvAttackKnob, pitchEnvAttackLabel, PitchEnv::attack, "A");
+    createRotaryKnob(pitchEnvDecayKnob, pitchEnvDecayLabel, PitchEnv::decay, "D");
 
     // Effects Section
-    createRotaryKnob(multiFxLevelKnob, multiFxLevelLabel, Effects::multiFxLevel, "Multi-FX");
-    createRotaryKnob(delayTimeKnob, delayTimeLabel, Effects::delayTime, "Dly Time");
+    createRotaryKnob(toneCtrlBassKnob, toneCtrlBassLabel, Effects::toneCtrlBass, "Bass");
+    createRotaryKnob(toneCtrlTrebleKnob, toneCtrlTrebleLabel, Effects::toneCtrlTreble, "Treble");
+    createRotaryKnob(multiFxLevelKnob, multiFxLevelLabel, Effects::multiFxLevel, "FX Lvl");
+    createRotaryKnob(delayTimeKnob, delayTimeLabel, Effects::delayTime, "Dly Tm");
     createRotaryKnob(delayFeedbackKnob, delayFeedbackLabel, Effects::delayFeedback, "Dly FB");
-    createRotaryKnob(delayLevelKnob, delayLevelLabel, Effects::delayLevel, "Dly Level");
+    createRotaryKnob(delayLevelKnob, delayLevelLabel, Effects::delayLevel, "Dly Lv");
 }
 
 JP8080ControllerAudioProcessorEditor::~JP8080ControllerAudioProcessorEditor()
@@ -132,15 +144,21 @@ void JP8080ControllerAudioProcessorEditor::paint (juce::Graphics& g)
         g.fillRect (x + 10, y + 25, w - 20, 1);
     };
 
-    // Row 1: OSCILLATOR and FILTER sections
-    drawPanel (10, 100, 280, 150, "OSCILLATOR");
-    drawPanel (300, 100, 280, 150, "FILTER");
-    drawPanel (590, 100, 300, 150, "FILTER ENVELOPE");
+    // Row 1: OSCILLATOR sections
+    drawPanel (10, 100, 190, 150, "OSCILLATOR 1");
+    drawPanel (210, 100, 340, 150, "OSCILLATOR 2");
+    drawPanel (560, 100, 330, 150, "OSC COMMON");
 
-    // Row 2: AMPLIFIER and LFO sections
-    drawPanel (10, 260, 380, 150, "AMPLIFIER");
-    drawPanel (400, 260, 240, 150, "LFO");
-    drawPanel (650, 260, 240, 150, "EFFECTS");
+    // Row 2: FILTER and ENVELOPE sections
+    drawPanel (10, 260, 280, 150, "FILTER");
+    drawPanel (300, 260, 280, 150, "FILTER ENVELOPE");
+    drawPanel (590, 260, 300, 150, "AMP ENVELOPE");
+
+    // Row 3: LFO, PITCH ENV, and EFFECTS sections
+    drawPanel (10, 420, 180, 150, "LFO 1");
+    drawPanel (200, 420, 180, 150, "LFO 2");
+    drawPanel (390, 420, 200, 150, "PITCH ENV");
+    drawPanel (600, 420, 290, 150, "EFFECTS");
 
     // Info text
     g.setColour (juce::Colour (0xff666666));
@@ -180,45 +198,64 @@ void JP8080ControllerAudioProcessorEditor::resized()
         label.setBounds (x, y + 100, 70, 20);
     };
 
-    // Row 1: Oscillator, Filter, Filter Envelope
-    // Oscillator section (6 knobs)
+    // Row 1: Oscillator sections
+    // OSCILLATOR 1 (2 knobs)
     positionKnob (osc1Control1Knob, osc1Control1Label, 20, 100);
     positionKnob (osc1Control2Knob, osc1Control2Label, 100, 100);
-    positionKnob (osc2RangeKnob, osc2RangeLabel, 180, 100);
-    positionKnob (osc2FineKnob, osc2FineLabel, 20, 180);
-    positionKnob (oscBalanceKnob, oscBalanceLabel, 100, 180);
-    positionKnob (xModDepthKnob, xModDepthLabel, 180, 180);
 
-    // Filter section (4 knobs)
-    positionKnob (filterCutoffKnob, filterCutoffLabel, 310, 100);
-    positionKnob (filterResonanceKnob, filterResonanceLabel, 390, 100);
-    positionKnob (filterKeyFollowKnob, filterKeyFollowLabel, 470, 100);
-    positionKnob (filterEnvDepthKnob, filterEnvDepthLabel, 310, 180);
+    // OSCILLATOR 2 (4 knobs)
+    positionKnob (osc2RangeKnob, osc2RangeLabel, 220, 100);
+    positionKnob (osc2FineKnob, osc2FineLabel, 300, 100);
+    positionKnob (osc2Control1Knob, osc2Control1Label, 380, 100);
+    positionKnob (osc2Control2Knob, osc2Control2Label, 460, 100);
 
-    // Filter Envelope (4 knobs)
-    positionKnob (filterAttackKnob, filterAttackLabel, 600, 100);
-    positionKnob (filterDecayKnob, filterDecayLabel, 680, 100);
-    positionKnob (filterSustainKnob, filterSustainLabel, 760, 100);
-    positionKnob (filterReleaseKnob, filterReleaseLabel, 600, 180);
+    // OSC COMMON (3 knobs)
+    positionKnob (oscBalanceKnob, oscBalanceLabel, 570, 100);
+    positionKnob (xModDepthKnob, xModDepthLabel, 650, 100);
+    positionKnob (oscLfo1DepthKnob, oscLfo1DepthLabel, 730, 100);
 
-    // Row 2: Amplifier, LFO, Effects
-    // Amplifier section (5 knobs)
-    positionKnob (ampLevelKnob, ampLevelLabel, 20, 260);
-    positionKnob (ampAttackKnob, ampAttackLabel, 100, 260);
-    positionKnob (ampDecayKnob, ampDecayLabel, 180, 260);
-    positionKnob (ampSustainKnob, ampSustainLabel, 260, 260);
-    positionKnob (ampReleaseKnob, ampReleaseLabel, 100, 340);
+    // Row 2: Filter and Envelope sections
+    // FILTER (4 knobs)
+    positionKnob (filterCutoffKnob, filterCutoffLabel, 20, 260);
+    positionKnob (filterResonanceKnob, filterResonanceLabel, 100, 260);
+    positionKnob (filterKeyFollowKnob, filterKeyFollowLabel, 180, 260);
+    positionKnob (filterLfo1DepthKnob, filterLfo1DepthLabel, 20, 340);
 
-    // LFO section (3 knobs)
-    positionKnob (lfo1RateKnob, lfo1RateLabel, 410, 260);
-    positionKnob (lfo1FadeKnob, lfo1FadeLabel, 490, 260);
-    positionKnob (lfo2RateKnob, lfo2RateLabel, 410, 340);
+    // FILTER ENVELOPE (5 knobs)
+    positionKnob (filterEnvDepthKnob, filterEnvDepthLabel, 310, 260);
+    positionKnob (filterAttackKnob, filterAttackLabel, 390, 260);
+    positionKnob (filterDecayKnob, filterDecayLabel, 470, 260);
+    positionKnob (filterSustainKnob, filterSustainLabel, 310, 340);
+    positionKnob (filterReleaseKnob, filterReleaseLabel, 390, 340);
 
-    // Effects section (4 knobs)
-    positionKnob (multiFxLevelKnob, multiFxLevelLabel, 660, 260);
-    positionKnob (delayTimeKnob, delayTimeLabel, 740, 260);
-    positionKnob (delayFeedbackKnob, delayFeedbackLabel, 660, 340);
-    positionKnob (delayLevelKnob, delayLevelLabel, 740, 340);
+    // AMP ENVELOPE (5 knobs)
+    positionKnob (ampLevelKnob, ampLevelLabel, 600, 260);
+    positionKnob (ampAttackKnob, ampAttackLabel, 680, 260);
+    positionKnob (ampDecayKnob, ampDecayLabel, 760, 260);
+    positionKnob (ampSustainKnob, ampSustainLabel, 600, 340);
+    positionKnob (ampReleaseKnob, ampReleaseLabel, 680, 340);
+
+    // Row 3: LFO, Pitch Env, and Effects sections
+    // LFO 1 (2 knobs)
+    positionKnob (lfo1RateKnob, lfo1RateLabel, 20, 420);
+    positionKnob (lfo1FadeKnob, lfo1FadeLabel, 100, 420);
+
+    // LFO 2 (2 knobs)
+    positionKnob (lfo2RateKnob, lfo2RateLabel, 210, 420);
+    positionKnob (lfo2DepthKnob, lfo2DepthLabel, 290, 420);
+
+    // PITCH ENV (3 knobs)
+    positionKnob (pitchEnvDepthKnob, pitchEnvDepthLabel, 400, 420);
+    positionKnob (pitchEnvAttackKnob, pitchEnvAttackLabel, 480, 420);
+    positionKnob (pitchEnvDecayKnob, pitchEnvDecayLabel, 400, 500);
+
+    // EFFECTS (6 knobs)
+    positionKnob (toneCtrlBassKnob, toneCtrlBassLabel, 610, 420);
+    positionKnob (toneCtrlTrebleKnob, toneCtrlTrebleLabel, 690, 420);
+    positionKnob (multiFxLevelKnob, multiFxLevelLabel, 770, 420);
+    positionKnob (delayTimeKnob, delayTimeLabel, 610, 500);
+    positionKnob (delayFeedbackKnob, delayFeedbackLabel, 690, 500);
+    positionKnob (delayLevelKnob, delayLevelLabel, 770, 500);
 }
 
 //==============================================================================
@@ -254,6 +291,15 @@ void JP8080ControllerAudioProcessorEditor::createRotaryKnob(juce::Slider& slider
         else if (paramID == JP8080Parameters::Oscillator::xModDepth)
             xModDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
                 audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::Oscillator::osc2Control1)
+            osc2Control1Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::Oscillator::osc2Control2)
+            osc2Control2Attachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::Oscillator::oscLfo1Depth)
+            oscLfo1DepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
         else if (paramID == JP8080Parameters::Filter::cutoff)
             filterCutoffAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
                 audioProcessor.getValueTreeState(), paramID, slider);
@@ -262,6 +308,9 @@ void JP8080ControllerAudioProcessorEditor::createRotaryKnob(juce::Slider& slider
                 audioProcessor.getValueTreeState(), paramID, slider);
         else if (paramID == JP8080Parameters::Filter::keyFollow)
             filterKeyFollowAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::Filter::lfo1Depth)
+            filterLfo1DepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
                 audioProcessor.getValueTreeState(), paramID, slider);
         else if (paramID == JP8080Parameters::Filter::envDepth)
             filterEnvDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -301,6 +350,24 @@ void JP8080ControllerAudioProcessorEditor::createRotaryKnob(juce::Slider& slider
                 audioProcessor.getValueTreeState(), paramID, slider);
         else if (paramID == JP8080Parameters::LFO::lfo2Rate)
             lfo2RateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::LFO::lfo2PitchDepth)
+            lfo2DepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::PitchEnv::depth)
+            pitchEnvDepthAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::PitchEnv::attack)
+            pitchEnvAttackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::PitchEnv::decay)
+            pitchEnvDecayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::Effects::toneCtrlBass)
+            toneCtrlBassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+                audioProcessor.getValueTreeState(), paramID, slider);
+        else if (paramID == JP8080Parameters::Effects::toneCtrlTreble)
+            toneCtrlTrebleAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
                 audioProcessor.getValueTreeState(), paramID, slider);
         else if (paramID == JP8080Parameters::Effects::multiFxLevel)
             multiFxLevelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(

@@ -54,16 +54,22 @@ private:
     juce::Slider osc1Control1Knob, osc1Control2Knob;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1Control1Attachment, osc1Control2Attachment;
 
-    juce::Label osc2RangeLabel, osc2FineLabel, oscBalanceLabel, xModDepthLabel;
-    juce::Slider osc2RangeKnob, osc2FineKnob, oscBalanceKnob, xModDepthKnob;
+    juce::Label osc2RangeLabel, osc2FineLabel, osc2Control1Label, osc2Control2Label;
+    juce::Slider osc2RangeKnob, osc2FineKnob, osc2Control1Knob, osc2Control2Knob;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc2RangeAttachment, osc2FineAttachment,
-                                                                            oscBalanceAttachment, xModDepthAttachment;
+                                                                            osc2Control1Attachment, osc2Control2Attachment;
+
+    juce::Label oscBalanceLabel, xModDepthLabel, oscLfo1DepthLabel;
+    juce::Slider oscBalanceKnob, xModDepthKnob, oscLfo1DepthKnob;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> oscBalanceAttachment, xModDepthAttachment,
+                                                                            oscLfo1DepthAttachment;
 
     // Filter Section
-    juce::Label filterCutoffLabel, filterResonanceLabel, filterKeyFollowLabel, filterEnvDepthLabel;
-    juce::Slider filterCutoffKnob, filterResonanceKnob, filterKeyFollowKnob, filterEnvDepthKnob;
+    juce::Label filterCutoffLabel, filterResonanceLabel, filterKeyFollowLabel, filterLfo1DepthLabel, filterEnvDepthLabel;
+    juce::Slider filterCutoffKnob, filterResonanceKnob, filterKeyFollowKnob, filterLfo1DepthKnob, filterEnvDepthKnob;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> filterCutoffAttachment, filterResonanceAttachment,
-                                                                            filterKeyFollowAttachment, filterEnvDepthAttachment;
+                                                                            filterKeyFollowAttachment, filterLfo1DepthAttachment,
+                                                                            filterEnvDepthAttachment;
 
     // Filter Envelope
     juce::Label filterAttackLabel, filterDecayLabel, filterSustainLabel, filterReleaseLabel;
@@ -79,14 +85,22 @@ private:
                                                                             ampReleaseAttachment;
 
     // LFO Section
-    juce::Label lfo1RateLabel, lfo1FadeLabel, lfo2RateLabel;
-    juce::Slider lfo1RateKnob, lfo1FadeKnob, lfo2RateKnob;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfo1RateAttachment, lfo1FadeAttachment, lfo2RateAttachment;
+    juce::Label lfo1RateLabel, lfo1FadeLabel, lfo2RateLabel, lfo2DepthLabel;
+    juce::Slider lfo1RateKnob, lfo1FadeKnob, lfo2RateKnob, lfo2DepthKnob;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfo1RateAttachment, lfo1FadeAttachment,
+                                                                            lfo2RateAttachment, lfo2DepthAttachment;
+
+    // Pitch Envelope Section
+    juce::Label pitchEnvDepthLabel, pitchEnvAttackLabel, pitchEnvDecayLabel;
+    juce::Slider pitchEnvDepthKnob, pitchEnvAttackKnob, pitchEnvDecayKnob;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> pitchEnvDepthAttachment, pitchEnvAttackAttachment,
+                                                                            pitchEnvDecayAttachment;
 
     // Effects Section
-    juce::Label multiFxLevelLabel, delayTimeLabel, delayFeedbackLabel, delayLevelLabel;
-    juce::Slider multiFxLevelKnob, delayTimeKnob, delayFeedbackKnob, delayLevelKnob;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> multiFxLevelAttachment, delayTimeAttachment,
+    juce::Label toneCtrlBassLabel, toneCtrlTrebleLabel, multiFxLevelLabel, delayTimeLabel, delayFeedbackLabel, delayLevelLabel;
+    juce::Slider toneCtrlBassKnob, toneCtrlTrebleKnob, multiFxLevelKnob, delayTimeKnob, delayFeedbackKnob, delayLevelKnob;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> toneCtrlBassAttachment, toneCtrlTrebleAttachment,
+                                                                            multiFxLevelAttachment, delayTimeAttachment,
                                                                             delayFeedbackAttachment, delayLevelAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JP8080ControllerAudioProcessorEditor)
