@@ -49,7 +49,19 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    //==============================================================================
+    // MIDI Configuration
+    void setMidiChannel (int channel);
+    int getMidiChannel() const { return midiChannel; }
+
 private:
+    //==============================================================================
+    // MIDI output configuration
+    int midiChannel = 1;  // Default MIDI channel (1-16)
+
+    // Helper method to send MIDI CC messages
+    void sendMidiCC (juce::MidiBuffer& midiMessages, int ccNumber, int value, int channel);
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JP8080ControllerAudioProcessor)
 };

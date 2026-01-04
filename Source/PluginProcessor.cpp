@@ -118,8 +118,6 @@ bool JP8080ControllerAudioProcessor::isBusesLayoutSupported (const BusesLayout& 
 void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                                     juce::MidiBuffer& midiMessages)
 {
-    juce::ignoreUnused (midiMessages);
-
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -128,7 +126,12 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // MIDI processing will be implemented in Phase 3
+    // MIDI output processing
+    // The midiMessages buffer is where we'll add MIDI CC messages to send to the JP-8080
+    // Parameter changes will trigger MIDI CC messages (to be implemented in Phase 2)
+
+    // For now, this is ready to accept and pass through MIDI messages
+    // MIDI CC generation will be added when parameters are implemented
 }
 
 //==============================================================================
@@ -151,6 +154,31 @@ void JP8080ControllerAudioProcessor::getStateInformation (juce::MemoryBlock& des
 void JP8080ControllerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     juce::ignoreUnused (data, sizeInBytes);
+}
+
+//==============================================================================
+// MIDI Configuration Methods
+
+void JP8080ControllerAudioProcessor::setMidiChannel (int channel)
+{
+    // Ensure channel is in valid range (1-16)
+    midiChannel = juce::jlimit (1, 16, channel);
+}
+
+void JP8080ControllerAudioProcessor::sendMidiCC (juce::MidiBuffer& midiMessages,
+                                                   int ccNumber, int value, int channel)
+{
+    // Ensure values are in valid MIDI range
+    ccNumber = juce::jlimit (0, 127, ccNumber);
+    value = juce::jlimit (0, 127, value);
+    channel = juce::jlimit (1, 16, channel);
+
+    // Create MIDI CC message
+    // MIDI channels are 0-15 internally, but displayed as 1-16
+    auto message = juce::MidiMessage::controllerEvent (channel - 1, ccNumber, value);
+
+    // Add to MIDI buffer at sample position 0
+    midiMessages.addEvent (message, 0);
 }
 
 //==============================================================================
