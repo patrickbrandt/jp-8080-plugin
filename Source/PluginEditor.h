@@ -11,7 +11,8 @@
  *
  * Phase 4B: Custom JP-8080-style graphics and rotary knobs
  */
-class JP8080ControllerAudioProcessorEditor  : public juce::AudioProcessorEditor
+class JP8080ControllerAudioProcessorEditor  : public juce::AudioProcessorEditor,
+                                             private juce::ComboBox::Listener
 {
 public:
     JP8080ControllerAudioProcessorEditor (JP8080ControllerAudioProcessor&);
@@ -29,6 +30,12 @@ private:
     void createRotaryKnob(juce::Slider& slider, juce::Label& label,
                          const juce::String& paramID, const juce::String& labelText);
 
+    // ComboBox listener callback
+    void comboBoxChanged(juce::ComboBox* comboBox) override;
+
+    // Helper to update patch name ComboBox based on current bank
+    void updatePatchNamesForCurrentBank();
+
     // MIDI Configuration Controls
     juce::Label midiChannelLabel;
     juce::ComboBox midiChannelCombo;
@@ -38,9 +45,9 @@ private:
     juce::ComboBox patchBankCombo;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> patchBankAttachment;
 
-    juce::Label patchProgramLabel;
-    juce::Slider patchProgramSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> patchProgramAttachment;
+    juce::Label patchNameLabel;
+    juce::ComboBox patchNameCombo;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> patchNameAttachment;
 
     // Oscillator Section
     juce::Label osc1Control1Label, osc1Control2Label;

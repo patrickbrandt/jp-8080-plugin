@@ -24,25 +24,28 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     midiChannelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), MidiConfig::midiChannel, midiChannelCombo);
 
-    patchBankLabel.setText ("Bank:", juce::dontSendNotification);
+    patchBankLabel.setText ("Patch:", juce::dontSendNotification);
     patchBankLabel.setJustificationType (juce::Justification::centredRight);
     addAndMakeVisible (patchBankLabel);
 
     patchBankCombo.addItemList (patchBankNames, 1);
+    patchBankCombo.addListener (this);
     addAndMakeVisible (patchBankCombo);
     patchBankAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
         audioProcessor.getValueTreeState(), MidiConfig::patchBank, patchBankCombo);
 
-    patchProgramLabel.setText ("Program:", juce::dontSendNotification);
-    patchProgramLabel.setJustificationType (juce::Justification::centredRight);
-    addAndMakeVisible (patchProgramLabel);
+    patchNameLabel.setText ("Patch Name:", juce::dontSendNotification);
+    patchNameLabel.setJustificationType (juce::Justification::centredRight);
+    addAndMakeVisible (patchNameLabel);
 
-    patchProgramSlider.setSliderStyle (juce::Slider::LinearHorizontal);
-    patchProgramSlider.setTextBoxStyle (juce::Slider::TextBoxRight, false, 50, 20);
-    patchProgramSlider.setRange (1, 64, 1);
-    addAndMakeVisible (patchProgramSlider);
-    patchProgramAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), MidiConfig::patchProgram, patchProgramSlider);
+    // Initialize with User A patch names
+    patchNameCombo.addItemList (userAPatchNames, 1);
+    addAndMakeVisible (patchNameCombo);
+    patchNameAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), MidiConfig::patchProgram, patchNameCombo);
+
+    // Update patch names for currently selected bank
+    updatePatchNamesForCurrentBank();
 
     // Oscillator Section
     createRotaryKnob(osc1Control1Knob, osc1Control1Label, Oscillator::osc1Control1, "OSC1 Ctrl1");
@@ -85,6 +88,7 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
 
 JP8080ControllerAudioProcessorEditor::~JP8080ControllerAudioProcessorEditor()
 {
+    patchBankCombo.removeListener(this);
     setLookAndFeel(nullptr);
 }
 
@@ -163,11 +167,11 @@ void JP8080ControllerAudioProcessorEditor::resized()
     midiRow.removeFromLeft (15);
     patchBankLabel.setBounds (midiRow.removeFromLeft (50));
     midiRow.removeFromLeft (5);
-    patchBankCombo.setBounds (midiRow.removeFromLeft (120));
+    patchBankCombo.setBounds (midiRow.removeFromLeft (100));
     midiRow.removeFromLeft (15);
-    patchProgramLabel.setBounds (midiRow.removeFromLeft (70));
+    patchNameLabel.setBounds (midiRow.removeFromLeft (80));
     midiRow.removeFromLeft (5);
-    patchProgramSlider.setBounds (midiRow.removeFromLeft (100));
+    patchNameCombo.setBounds (midiRow.removeFromLeft (180));
 
     // Helper lambda to position a knob
     auto positionKnob = [](juce::Slider& knob, juce::Label& label, int x, int y)
@@ -317,4 +321,38 @@ void JP8080ControllerAudioProcessorEditor::createRotaryKnob(juce::Slider& slider
     label.setJustificationType (juce::Justification::centred);
     label.setFont (juce::Font (11.0f));
     addAndMakeVisible (label);
+}
+
+//==============================================================================
+void JP8080ControllerAudioProcessorEditor::comboBoxChanged(juce::ComboBox* comboBox)
+{
+    if (comboBox == &patchBankCombo)
+    {
+        updatePatchNamesForCurrentBank();
+    }
+}
+
+void JP8080ControllerAudioProcessorEditor::updatePatchNamesForCurrentBank()
+{
+    using namespace JP8080Parameters;
+
+    // Get current bank selection
+    int bankIndex = patchBankCombo.getSelectedItemIndex();
+    if (bankIndex < 0 || bankIndex >= 8)
+        return;
+
+    PatchBank bank = static_cast<PatchBank>(bankIndex);
+
+    // Get current program selection before we update the list
+    int currentProgram = patchNameCombo.getSelectedItemIndex();
+
+    // Clear and repopulate the patch name ComboBox
+    patchNameCombo.clear(juce::dontSendNotification);
+    patchNameCombo.addItemList(getPatchNamesForBank(bank), 1);
+
+    // Restore the program selection (or select first if invalid)
+    if (currentProgram >= 0 && currentProgram < 64)
+        patchNameCombo.setSelectedItemIndex(currentProgram, juce::dontSendNotification);
+    else
+        patchNameCombo.setSelectedItemIndex(0, juce::dontSendNotification);
 }
