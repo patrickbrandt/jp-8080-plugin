@@ -39,10 +39,12 @@ Create an Audio Unit (AU) plugin for Logic Pro that provides a graphical interfa
 
 ### Waveforms
 **OSC 1**: SUPER SAW, TRIANGLE MOD, NOISE, FEEDBACK OSC, SQR (PWM), SAW, TRI
+
 **OSC 2**: SQR (PWM), SAW, TRI, NOISE
 
 ### Effects Types
 **Multi-FX (13 types)**: SUPER CHORUS SLW/MID/FST/CLR, FLANGER SLOW/DEEP/FAST, DEEP PHASING SLW, JET PHASING, TWISTING, FREEZE PHASE 1/2, DISTORTION
+
 **Delay (5 types)**: PANNING L->R, PANNING R->L, PANNING SHORT, MONO SHORT, MONO LONG
 
 ### Filter Types
@@ -450,7 +452,9 @@ The JP-8080 has 248 parameters per patch organized into the following sections:
 
 ### Performance Parameters
 **Performance Common**: 37 bytes including name, key mode, split point, arpeggio settings
+
 **Voice Modulator**: 41 bytes for vocoder-specific parameters
+
 **Part Parameters**: 8 bytes per part (Upper/Lower) for MIDI channel, transpose, sync settings
 
 ### System Parameters
