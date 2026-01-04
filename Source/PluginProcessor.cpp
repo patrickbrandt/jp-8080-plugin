@@ -11,8 +11,11 @@ JP8080ControllerAudioProcessor::JP8080ControllerAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
+#else
+     :
 #endif
+       apvts (*this, nullptr, "Parameters", createParameterLayout())
 {
 }
 
@@ -146,14 +149,107 @@ juce::AudioProcessorEditor* JP8080ControllerAudioProcessor::createEditor()
 }
 
 //==============================================================================
+// Parameter Layout Creation
+juce::AudioProcessorValueTreeState::ParameterLayout
+JP8080ControllerAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    // Helper lambda to create a standard 0-127 parameter
+    auto createStandardParam = [](const juce::String& id, const juce::String& name, float defaultValue = 64.0f)
+    {
+        return std::make_unique<juce::AudioParameterInt>(
+            id, name, 0, 127, static_cast<int>(defaultValue));
+    };
+
+    // Helper lambda to create a switch parameter (0-63=OFF, 64-127=ON)
+    auto createSwitchParam = [](const juce::String& id, const juce::String& name, bool defaultOn = false)
+    {
+        return std::make_unique<juce::AudioParameterInt>(
+            id, name, 0, 127, defaultOn ? 127 : 0);
+    };
+
+    using namespace JP8080Parameters;
+
+    // OSCILLATOR SECTION (9 params)
+    layout.add(createStandardParam(Oscillator::osc1Control1, getDisplayName(Oscillator::osc1Control1)));
+    layout.add(createStandardParam(Oscillator::osc1Control2, getDisplayName(Oscillator::osc1Control2)));
+    layout.add(createStandardParam(Oscillator::osc2Range, getDisplayName(Oscillator::osc2Range)));
+    layout.add(createStandardParam(Oscillator::osc2FineWide, getDisplayName(Oscillator::osc2FineWide)));
+    layout.add(createStandardParam(Oscillator::osc2Control1, getDisplayName(Oscillator::osc2Control1)));
+    layout.add(createStandardParam(Oscillator::osc2Control2, getDisplayName(Oscillator::osc2Control2)));
+    layout.add(createStandardParam(Oscillator::oscBalance, getDisplayName(Oscillator::oscBalance)));
+    layout.add(createStandardParam(Oscillator::xModDepth, getDisplayName(Oscillator::xModDepth), 0.0f));
+    layout.add(createStandardParam(Oscillator::oscLfo1Depth, getDisplayName(Oscillator::oscLfo1Depth)));
+
+    // PITCH ENVELOPE SECTION (3 params)
+    layout.add(createStandardParam(PitchEnv::depth, getDisplayName(PitchEnv::depth)));
+    layout.add(createStandardParam(PitchEnv::attack, getDisplayName(PitchEnv::attack), 0.0f));
+    layout.add(createStandardParam(PitchEnv::decay, getDisplayName(PitchEnv::decay), 0.0f));
+
+    // FILTER SECTION (9 params)
+    layout.add(createStandardParam(Filter::cutoff, getDisplayName(Filter::cutoff), 127.0f));
+    layout.add(createStandardParam(Filter::resonance, getDisplayName(Filter::resonance), 0.0f));
+    layout.add(createStandardParam(Filter::keyFollow, getDisplayName(Filter::keyFollow)));
+    layout.add(createStandardParam(Filter::lfo1Depth, getDisplayName(Filter::lfo1Depth)));
+    layout.add(createStandardParam(Filter::envDepth, getDisplayName(Filter::envDepth)));
+    layout.add(createStandardParam(Filter::envAttack, getDisplayName(Filter::envAttack), 0.0f));
+    layout.add(createStandardParam(Filter::envDecay, getDisplayName(Filter::envDecay), 64.0f));
+    layout.add(createStandardParam(Filter::envSustain, getDisplayName(Filter::envSustain), 127.0f));
+    layout.add(createStandardParam(Filter::envRelease, getDisplayName(Filter::envRelease), 64.0f));
+
+    // AMPLIFIER SECTION (6 params)
+    layout.add(createStandardParam(Amplifier::level, getDisplayName(Amplifier::level), 100.0f));
+    layout.add(createStandardParam(Amplifier::lfo1Depth, getDisplayName(Amplifier::lfo1Depth)));
+    layout.add(createStandardParam(Amplifier::envAttack, getDisplayName(Amplifier::envAttack), 0.0f));
+    layout.add(createStandardParam(Amplifier::envDecay, getDisplayName(Amplifier::envDecay), 64.0f));
+    layout.add(createStandardParam(Amplifier::envSustain, getDisplayName(Amplifier::envSustain), 127.0f));
+    layout.add(createStandardParam(Amplifier::envRelease, getDisplayName(Amplifier::envRelease), 64.0f));
+
+    // LFO SECTION (6 params)
+    layout.add(createStandardParam(LFO::lfo1Rate, getDisplayName(LFO::lfo1Rate), 64.0f));
+    layout.add(createStandardParam(LFO::lfo1Fade, getDisplayName(LFO::lfo1Fade), 0.0f));
+    layout.add(createStandardParam(LFO::lfo2Rate, getDisplayName(LFO::lfo2Rate), 64.0f));
+    layout.add(createStandardParam(LFO::lfo2PitchDepth, getDisplayName(LFO::lfo2PitchDepth)));
+    layout.add(createStandardParam(LFO::lfo2FilterDepth, getDisplayName(LFO::lfo2FilterDepth)));
+    layout.add(createStandardParam(LFO::lfo2AmpDepth, getDisplayName(LFO::lfo2AmpDepth)));
+
+    // EFFECTS SECTION (6 params)
+    layout.add(createStandardParam(Effects::toneCtrlBass, getDisplayName(Effects::toneCtrlBass)));
+    layout.add(createStandardParam(Effects::toneCtrlTreble, getDisplayName(Effects::toneCtrlTreble)));
+    layout.add(createStandardParam(Effects::multiFxLevel, getDisplayName(Effects::multiFxLevel), 64.0f));
+    layout.add(createStandardParam(Effects::delayTime, getDisplayName(Effects::delayTime), 0.0f));
+    layout.add(createStandardParam(Effects::delayFeedback, getDisplayName(Effects::delayFeedback), 0.0f));
+    layout.add(createStandardParam(Effects::delayLevel, getDisplayName(Effects::delayLevel), 0.0f));
+
+    // CONTROL SECTION (6 params)
+    layout.add(createStandardParam(Control::portamentoTime, getDisplayName(Control::portamentoTime), 0.0f));
+    layout.add(createSwitchParam(Control::portamentoSwitch, getDisplayName(Control::portamentoSwitch), false));
+    layout.add(createSwitchParam(Control::hold1, getDisplayName(Control::hold1), false));
+    layout.add(createStandardParam(Control::modulation, getDisplayName(Control::modulation), 0.0f));
+    layout.add(createStandardParam(Control::expression, getDisplayName(Control::expression), 127.0f));
+    layout.add(createStandardParam(Control::pan, getDisplayName(Control::pan), 64.0f));
+
+    return layout;
+}
+
+//==============================================================================
 void JP8080ControllerAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    juce::ignoreUnused (destData);
+    // Save parameter state to memory block
+    auto state = apvts.copyState();
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
 void JP8080ControllerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    juce::ignoreUnused (data, sizeInBytes);
+    // Restore parameter state from memory block
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (apvts.state.getType()))
+            apvts.replaceState (juce::ValueTree::fromXml (*xmlState));
 }
 
 //==============================================================================

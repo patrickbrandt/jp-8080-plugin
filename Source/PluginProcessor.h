@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "JP8080Parameters.h"
 
 //==============================================================================
 /**
@@ -54,7 +55,18 @@ public:
     void setMidiChannel (int channel);
     int getMidiChannel() const { return midiChannel; }
 
+    //==============================================================================
+    // Parameter access
+    juce::AudioProcessorValueTreeState& getValueTreeState() { return apvts; }
+
 private:
+    //==============================================================================
+    // Parameter Management
+    juce::AudioProcessorValueTreeState apvts;
+
+    // Create parameter layout for APVTS
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+
     //==============================================================================
     // MIDI output configuration
     int midiChannel = 1;  // Default MIDI channel (1-16)
