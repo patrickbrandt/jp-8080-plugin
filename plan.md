@@ -275,6 +275,7 @@ The interface should visually mirror the JP-8080's panel layout for intuitive us
 
 ### Documentation
 - JP-8080 MIDI Implementation: `midi_implementation.pdf`
+- JP-8080 Performance & Patch List: `performance_and_patch_list.pdf`
 - JUCE Tutorials: https://juce.com/tutorials/
 - Apple Audio Unit Guide: https://developer.apple.com/documentation/audiotoolbox/audio-unit-v3-plug-ins
 
