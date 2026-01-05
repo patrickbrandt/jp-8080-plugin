@@ -121,7 +121,7 @@ void JP8080ControllerAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (juce::Colours::lightgrey);
     g.setFont (juce::Font (14.0f));
-    g.drawText ("Controller", 120, 30, 100, 20, juce::Justification::centredLeft, true);
+    g.drawText ("Controller", 32, 43, 100, 20, juce::Justification::centredLeft, true);
 
     // Draw section panels
     auto drawPanel = [&](int x, int y, int w, int h, const juce::String& title)
