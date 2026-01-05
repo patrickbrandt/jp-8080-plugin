@@ -155,6 +155,36 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
         }
     }
 
+    // Check waveform parameters and send SysEx if changed
+    // These parameters use SysEx instead of MIDI CC
+    const juce::StringArray waveformParams = {
+        Oscillator::osc1Waveform,
+        Oscillator::osc2Waveform,
+        LFO::lfo1Waveform
+    };
+
+    for (const auto& paramID : waveformParams)
+    {
+        auto* param = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(paramID));
+        if (param != nullptr)
+        {
+            int currentValue = param->getIndex();
+
+            // Check if value has changed since last sent
+            auto it = lastSentValues.find(paramID);
+            bool valueChanged = (it == lastSentValues.end()) || (it->second != currentValue);
+
+            if (valueChanged)
+            {
+                // Send SysEx message for waveform change
+                sendWaveformSysEx(midiMessages, paramID, currentValue);
+
+                // Update last sent value
+                lastSentValues[paramID] = currentValue;
+            }
+        }
+    }
+
     // Send parameter changes as MIDI CC messages
     // Only send CC when parameter values have changed to avoid flooding MIDI output
     for (const auto& paramID : getAllParameterIDs())
@@ -162,6 +192,10 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
         auto* param = apvts.getParameter(paramID);
         if (param != nullptr)
         {
+            // Skip waveform parameters (handled above with SysEx)
+            if (waveformParams.contains(paramID))
+                continue;
+
             // Get normalized value (0.0-1.0) and convert to MIDI range (0-127)
             float normalizedValue = param->getValue();
             int midiValue = static_cast<int>(normalizedValue * 127.0f);
@@ -383,6 +417,98 @@ void JP8080ControllerAudioProcessor::sendBankSelectAndProgramChange (juce::MidiB
     // Send Program Change
     auto pcMessage = juce::MidiMessage::programChange(channel - 1, midiProgram);
     midiMessages.addEvent(pcMessage, 0);
+}
+
+//==============================================================================
+// SysEx Methods
+
+uint8_t JP8080ControllerAudioProcessor::calculateRolandChecksum (const std::vector<uint8_t>& addressAndData)
+{
+    // Calculate Roland checksum: sum all bytes, then checksum = 128 - (sum mod 128)
+    int sum = 0;
+    for (uint8_t byte : addressAndData)
+        sum += byte;
+
+    return static_cast<uint8_t>(128 - (sum % 128));
+}
+
+void JP8080ControllerAudioProcessor::sendSysExMessage (juce::MidiBuffer& midiMessages,
+                                                         const std::vector<uint8_t>& sysexData)
+{
+    // Create MIDI SysEx message and add to buffer
+    auto message = juce::MidiMessage::createSysExMessage(sysexData.data(), static_cast<int>(sysexData.size()));
+    midiMessages.addEvent(message, 0);
+}
+
+void JP8080ControllerAudioProcessor::sendWaveformSysEx (juce::MidiBuffer& midiMessages,
+                                                          const juce::String& paramID,
+                                                          int waveformValue)
+{
+    using namespace JP8080Parameters;
+
+    // JP-8080 SysEx format:
+    // F0 41 dev 00 06 12 aa bb cc dd ee sum F7
+    //
+    // F0 = SysEx start
+    // 41 = Roland manufacturer ID
+    // dev = Device ID (default 10h = 16)
+    // 00 06 = Model ID (JP-8080)
+    // 12 = DT1 command (Data Set 1)
+    // aa bb cc dd = 4-byte address
+    // ee = data value
+    // sum = checksum
+    // F7 = SysEx end
+
+    const uint8_t ROLAND_ID = 0x41;
+    const uint8_t DEVICE_ID = 0x10; // Default device ID
+    const uint8_t MODEL_ID_MSB = 0x00;
+    const uint8_t MODEL_ID_LSB = 0x06;
+    const uint8_t DT1_COMMAND = 0x12;
+
+    // Temporary Performance Patch (Upper) base address: 01 00 40 00
+    // We'll use Upper part for now
+    const uint8_t ADDR_BYTE1 = 0x01;
+    const uint8_t ADDR_BYTE2 = 0x00;
+    const uint8_t ADDR_BYTE3 = 0x40; // Upper part
+    uint8_t addrByte4 = 0x00;
+
+    // Determine the parameter offset based on parameter ID
+    if (paramID == LFO::lfo1Waveform)
+        addrByte4 = 0x10; // LFO1 Waveform offset
+    else if (paramID == Oscillator::osc1Waveform)
+        addrByte4 = 0x1E; // OSC1 Waveform offset
+    else if (paramID == Oscillator::osc2Waveform)
+        addrByte4 = 0x21; // OSC2 Waveform offset
+    else
+        return; // Unknown parameter, don't send
+
+    // Build address and data for checksum calculation
+    std::vector<uint8_t> addressAndData = {
+        ADDR_BYTE1, ADDR_BYTE2, ADDR_BYTE3, addrByte4,
+        static_cast<uint8_t>(waveformValue)
+    };
+
+    // Calculate checksum
+    uint8_t checksum = calculateRolandChecksum(addressAndData);
+
+    // Build complete SysEx message
+    std::vector<uint8_t> sysexMessage = {
+        0xF0,           // SysEx start
+        ROLAND_ID,      // Roland manufacturer ID
+        DEVICE_ID,      // Device ID
+        MODEL_ID_MSB,   // Model ID MSB
+        MODEL_ID_LSB,   // Model ID LSB (JP-8080)
+        DT1_COMMAND,    // DT1 command
+        ADDR_BYTE1,     // Address byte 1
+        ADDR_BYTE2,     // Address byte 2
+        ADDR_BYTE3,     // Address byte 3
+        addrByte4,      // Address byte 4
+        static_cast<uint8_t>(waveformValue), // Data
+        checksum,       // Checksum
+        0xF7            // SysEx end
+    };
+
+    sendSysExMessage(midiMessages, sysexMessage);
 }
 
 //==============================================================================

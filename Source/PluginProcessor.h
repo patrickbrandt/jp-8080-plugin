@@ -72,6 +72,11 @@ private:
     void sendMidiCC (juce::MidiBuffer& midiMessages, int ccNumber, int value, int channel);
     void sendBankSelectAndProgramChange (juce::MidiBuffer& midiMessages, int bank, int program, int channel);
 
+    // SysEx helper methods
+    uint8_t calculateRolandChecksum (const std::vector<uint8_t>& addressAndData);
+    void sendSysExMessage (juce::MidiBuffer& midiMessages, const std::vector<uint8_t>& sysexData);
+    void sendWaveformSysEx (juce::MidiBuffer& midiMessages, const juce::String& paramID, int waveformValue);
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JP8080ControllerAudioProcessor)
 };
