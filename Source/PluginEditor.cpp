@@ -8,7 +8,7 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     using namespace JP8080Parameters;
 
     // Set larger window size for full control layout
-    setSize (900, 680);
+    setSize (900, 800);
 
     // Apply custom LookAndFeel
     setLookAndFeel(&jp8080LookAndFeel);
@@ -150,15 +150,15 @@ void JP8080ControllerAudioProcessorEditor::paint (juce::Graphics& g)
     drawPanel (560, 100, 330, 150, "OSC COMMON");
 
     // Row 2: FILTER and ENVELOPE sections (increased spacing and height)
-    drawPanel (10, 270, 280, 170, "FILTER");
-    drawPanel (300, 270, 280, 170, "FILTER ENVELOPE");
-    drawPanel (590, 270, 300, 170, "AMP ENVELOPE");
+    drawPanel (10, 270, 280, 240, "FILTER");
+    drawPanel (300, 270, 280, 240, "FILTER ENVELOPE");
+    drawPanel (590, 270, 300, 240, "AMP ENVELOPE");
 
     // Row 3: LFO, PITCH ENV, and EFFECTS sections (increased spacing and height)
-    drawPanel (10, 460, 180, 170, "LFO 1");
-    drawPanel (200, 460, 180, 170, "LFO 2");
-    drawPanel (390, 460, 200, 170, "PITCH ENV");
-    drawPanel (600, 460, 290, 170, "EFFECTS");
+    drawPanel (10, 530, 180, 240, "LFO 1");
+    drawPanel (200, 530, 180, 240, "LFO 2");
+    drawPanel (390, 530, 200, 240, "PITCH ENV");
+    drawPanel (600, 530, 290, 240, "EFFECTS");
 
     // Info text
     g.setColour (juce::Colour (0xff666666));
@@ -219,43 +219,43 @@ void JP8080ControllerAudioProcessorEditor::resized()
     positionKnob (filterCutoffKnob, filterCutoffLabel, 20, 270);
     positionKnob (filterResonanceKnob, filterResonanceLabel, 100, 270);
     positionKnob (filterKeyFollowKnob, filterKeyFollowLabel, 180, 270);
-    positionKnob (filterLfo1DepthKnob, filterLfo1DepthLabel, 20, 350);
+    positionKnob (filterLfo1DepthKnob, filterLfo1DepthLabel, 20, 380);
 
     // FILTER ENVELOPE (5 knobs)
     positionKnob (filterEnvDepthKnob, filterEnvDepthLabel, 310, 270);
     positionKnob (filterAttackKnob, filterAttackLabel, 390, 270);
     positionKnob (filterDecayKnob, filterDecayLabel, 470, 270);
-    positionKnob (filterSustainKnob, filterSustainLabel, 310, 350);
-    positionKnob (filterReleaseKnob, filterReleaseLabel, 390, 350);
+    positionKnob (filterSustainKnob, filterSustainLabel, 310, 380);
+    positionKnob (filterReleaseKnob, filterReleaseLabel, 390, 380);
 
     // AMP ENVELOPE (5 knobs)
     positionKnob (ampLevelKnob, ampLevelLabel, 600, 270);
     positionKnob (ampAttackKnob, ampAttackLabel, 680, 270);
     positionKnob (ampDecayKnob, ampDecayLabel, 760, 270);
-    positionKnob (ampSustainKnob, ampSustainLabel, 600, 350);
-    positionKnob (ampReleaseKnob, ampReleaseLabel, 680, 350);
+    positionKnob (ampSustainKnob, ampSustainLabel, 600, 380);
+    positionKnob (ampReleaseKnob, ampReleaseLabel, 680, 380);
 
     // Row 3: LFO, Pitch Env, and Effects sections
     // LFO 1 (2 knobs)
-    positionKnob (lfo1RateKnob, lfo1RateLabel, 20, 460);
-    positionKnob (lfo1FadeKnob, lfo1FadeLabel, 100, 460);
+    positionKnob (lfo1RateKnob, lfo1RateLabel, 20, 530);
+    positionKnob (lfo1FadeKnob, lfo1FadeLabel, 100, 530);
 
     // LFO 2 (2 knobs)
-    positionKnob (lfo2RateKnob, lfo2RateLabel, 210, 460);
-    positionKnob (lfo2DepthKnob, lfo2DepthLabel, 290, 460);
+    positionKnob (lfo2RateKnob, lfo2RateLabel, 210, 530);
+    positionKnob (lfo2DepthKnob, lfo2DepthLabel, 290, 530);
 
     // PITCH ENV (3 knobs)
-    positionKnob (pitchEnvDepthKnob, pitchEnvDepthLabel, 400, 460);
-    positionKnob (pitchEnvAttackKnob, pitchEnvAttackLabel, 480, 460);
-    positionKnob (pitchEnvDecayKnob, pitchEnvDecayLabel, 400, 540);
+    positionKnob (pitchEnvDepthKnob, pitchEnvDepthLabel, 400, 530);
+    positionKnob (pitchEnvAttackKnob, pitchEnvAttackLabel, 480, 530);
+    positionKnob (pitchEnvDecayKnob, pitchEnvDecayLabel, 400, 640);
 
     // EFFECTS (6 knobs)
-    positionKnob (toneCtrlBassKnob, toneCtrlBassLabel, 610, 460);
-    positionKnob (toneCtrlTrebleKnob, toneCtrlTrebleLabel, 690, 460);
-    positionKnob (multiFxLevelKnob, multiFxLevelLabel, 770, 460);
-    positionKnob (delayTimeKnob, delayTimeLabel, 610, 540);
-    positionKnob (delayFeedbackKnob, delayFeedbackLabel, 690, 540);
-    positionKnob (delayLevelKnob, delayLevelLabel, 770, 540);
+    positionKnob (toneCtrlBassKnob, toneCtrlBassLabel, 610, 530);
+    positionKnob (toneCtrlTrebleKnob, toneCtrlTrebleLabel, 690, 530);
+    positionKnob (multiFxLevelKnob, multiFxLevelLabel, 770, 530);
+    positionKnob (delayTimeKnob, delayTimeLabel, 610, 640);
+    positionKnob (delayFeedbackKnob, delayFeedbackLabel, 690, 640);
+    positionKnob (delayLevelKnob, delayLevelLabel, 770, 640);
 }
 
 //==============================================================================
