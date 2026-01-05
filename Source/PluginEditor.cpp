@@ -195,7 +195,7 @@ void JP8080ControllerAudioProcessorEditor::resized()
     auto positionKnob = [](juce::Slider& knob, juce::Label& label, int x, int y)
     {
         knob.setBounds (x, y + 30, 70, 70);
-        label.setBounds (x, y + 100, 70, 20);
+        label.setBounds (x, y + 105, 70, 16);
     };
 
     // Row 1: Oscillator sections
@@ -264,7 +264,7 @@ void JP8080ControllerAudioProcessorEditor::createRotaryKnob(juce::Slider& slider
 {
     // Configure slider as rotary knob
     slider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
-    slider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 70, 16);
+    slider.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
     slider.setRange (0, 127, 1);
     slider.setLookAndFeel (&jp8080LookAndFeel);
     addAndMakeVisible (slider);
