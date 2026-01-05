@@ -50,9 +50,17 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> patchNameAttachment;
 
     // Oscillator Section
+    juce::Label osc1WaveformLabel;
+    juce::ComboBox osc1WaveformCombo;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> osc1WaveformAttachment;
+
     juce::Label osc1Control1Label, osc1Control2Label;
     juce::Slider osc1Control1Knob, osc1Control2Knob;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> osc1Control1Attachment, osc1Control2Attachment;
+
+    juce::Label osc2WaveformLabel;
+    juce::ComboBox osc2WaveformCombo;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> osc2WaveformAttachment;
 
     juce::Label osc2RangeLabel, osc2FineLabel, osc2Control1Label, osc2Control2Label;
     juce::Slider osc2RangeKnob, osc2FineKnob, osc2Control1Knob, osc2Control2Knob;
@@ -85,6 +93,10 @@ private:
                                                                             ampReleaseAttachment;
 
     // LFO Section
+    juce::Label lfo1WaveformLabel;
+    juce::ComboBox lfo1WaveformCombo;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> lfo1WaveformAttachment;
+
     juce::Label lfo1RateLabel, lfo1FadeLabel, lfo2RateLabel, lfo2DepthLabel;
     juce::Slider lfo1RateKnob, lfo1FadeKnob, lfo2RateKnob, lfo2DepthKnob;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lfo1RateAttachment, lfo1FadeAttachment,

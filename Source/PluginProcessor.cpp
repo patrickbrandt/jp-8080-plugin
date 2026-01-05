@@ -222,9 +222,19 @@ JP8080ControllerAudioProcessor::createParameterLayout()
 
     using namespace JP8080Parameters;
 
-    // OSCILLATOR SECTION (9 params)
+    // OSCILLATOR SECTION (11 params - added 2 waveform selectors)
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        Oscillator::osc1Waveform,
+        getDisplayName(Oscillator::osc1Waveform),
+        osc1WaveformNames,
+        0)); // Default: SUPER SAW
     layout.add(createStandardParam(Oscillator::osc1Control1, getDisplayName(Oscillator::osc1Control1)));
     layout.add(createStandardParam(Oscillator::osc1Control2, getDisplayName(Oscillator::osc1Control2)));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        Oscillator::osc2Waveform,
+        getDisplayName(Oscillator::osc2Waveform),
+        osc2WaveformNames,
+        0)); // Default: SQR (PWM)
     layout.add(createStandardParam(Oscillator::osc2Range, getDisplayName(Oscillator::osc2Range)));
     layout.add(createStandardParam(Oscillator::osc2FineWide, getDisplayName(Oscillator::osc2FineWide)));
     layout.add(createStandardParam(Oscillator::osc2Control1, getDisplayName(Oscillator::osc2Control1)));
@@ -257,7 +267,12 @@ JP8080ControllerAudioProcessor::createParameterLayout()
     layout.add(createStandardParam(Amplifier::envSustain, getDisplayName(Amplifier::envSustain), 127.0f));
     layout.add(createStandardParam(Amplifier::envRelease, getDisplayName(Amplifier::envRelease), 64.0f));
 
-    // LFO SECTION (6 params)
+    // LFO SECTION (7 params - added 1 waveform selector)
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        LFO::lfo1Waveform,
+        getDisplayName(LFO::lfo1Waveform),
+        lfo1WaveformNames,
+        0)); // Default: TRI
     layout.add(createStandardParam(LFO::lfo1Rate, getDisplayName(LFO::lfo1Rate), 64.0f));
     layout.add(createStandardParam(LFO::lfo1Fade, getDisplayName(LFO::lfo1Fade), 0.0f));
     layout.add(createStandardParam(LFO::lfo2Rate, getDisplayName(LFO::lfo2Rate), 64.0f));

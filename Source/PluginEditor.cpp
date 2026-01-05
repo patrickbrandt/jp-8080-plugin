@@ -8,7 +8,7 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     using namespace JP8080Parameters;
 
     // Set larger window size for full control layout (wider for single-row panels)
-    setSize (1200, 600);
+    setSize (1200, 610);
 
     // Apply custom LookAndFeel
     setLookAndFeel(&jp8080LookAndFeel);
@@ -48,8 +48,25 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     updatePatchNamesForCurrentBank();
 
     // Oscillator Section
+    osc1WaveformLabel.setText("Waveform:", juce::dontSendNotification);
+    osc1WaveformLabel.setJustificationType(juce::Justification::centredRight);
+    addAndMakeVisible(osc1WaveformLabel);
+    osc1WaveformCombo.addItemList(osc1WaveformNames, 1);
+    addAndMakeVisible(osc1WaveformCombo);
+    osc1WaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), Oscillator::osc1Waveform, osc1WaveformCombo);
+
     createRotaryKnob(osc1Control1Knob, osc1Control1Label, Oscillator::osc1Control1, "Ctrl 1");
     createRotaryKnob(osc1Control2Knob, osc1Control2Label, Oscillator::osc1Control2, "Ctrl 2");
+
+    osc2WaveformLabel.setText("Waveform:", juce::dontSendNotification);
+    osc2WaveformLabel.setJustificationType(juce::Justification::centredRight);
+    addAndMakeVisible(osc2WaveformLabel);
+    osc2WaveformCombo.addItemList(osc2WaveformNames, 1);
+    addAndMakeVisible(osc2WaveformCombo);
+    osc2WaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), Oscillator::osc2Waveform, osc2WaveformCombo);
+
     createRotaryKnob(osc2RangeKnob, osc2RangeLabel, Oscillator::osc2Range, "Range");
     createRotaryKnob(osc2FineKnob, osc2FineLabel, Oscillator::osc2FineWide, "Fine");
     createRotaryKnob(osc2Control1Knob, osc2Control1Label, Oscillator::osc2Control1, "Ctrl 1");
@@ -79,6 +96,14 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     createRotaryKnob(ampReleaseKnob, ampReleaseLabel, Amplifier::envRelease, "Release");
 
     // LFO Section
+    lfo1WaveformLabel.setText("Waveform:", juce::dontSendNotification);
+    lfo1WaveformLabel.setJustificationType(juce::Justification::centredRight);
+    addAndMakeVisible(lfo1WaveformLabel);
+    lfo1WaveformCombo.addItemList(lfo1WaveformNames, 1);
+    addAndMakeVisible(lfo1WaveformCombo);
+    lfo1WaveformAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), LFO::lfo1Waveform, lfo1WaveformCombo);
+
     createRotaryKnob(lfo1RateKnob, lfo1RateLabel, LFO::lfo1Rate, "Rate");
     createRotaryKnob(lfo1FadeKnob, lfo1FadeLabel, LFO::lfo1Fade, "Fade");
     createRotaryKnob(lfo2RateKnob, lfo2RateLabel, LFO::lfo2Rate, "Rate");
@@ -145,28 +170,20 @@ void JP8080ControllerAudioProcessorEditor::paint (juce::Graphics& g)
     };
 
     // Row 1: OSCILLATOR sections
-    drawPanel (10, 100, 190, 150, "OSCILLATOR 1");
-    drawPanel (210, 100, 340, 150, "OSCILLATOR 2");
-    drawPanel (560, 100, 330, 150, "OSC COMMON");
+    drawPanel (10, 100, 190, 160, "OSCILLATOR 1");
+    drawPanel (210, 100, 340, 160, "OSCILLATOR 2");
+    drawPanel (560, 100, 330, 160, "OSC COMMON");
 
     // Row 2: FILTER and ENVELOPE sections (single row layout)
-    drawPanel (10, 270, 330, 140, "FILTER");
-    drawPanel (350, 270, 410, 140, "FILTER ENVELOPE");
-    drawPanel (770, 270, 420, 140, "AMP ENVELOPE");
+    drawPanel (10, 280, 330, 140, "FILTER");
+    drawPanel (350, 280, 410, 140, "FILTER ENVELOPE");
+    drawPanel (770, 280, 420, 140, "AMP ENVELOPE");
 
     // Row 3: LFO, PITCH ENV, and EFFECTS sections (single row layout)
-    drawPanel (10, 430, 180, 140, "LFO 1");
-    drawPanel (200, 430, 180, 140, "LFO 2");
-    drawPanel (390, 430, 240, 140, "PITCH ENV");
-    drawPanel (640, 430, 550, 140, "EFFECTS");
-
-    // Info text
-    g.setColour (juce::Colour (0xff666666));
-    g.setFont (10.0f);
-    g.drawText ("Additional parameters available via Logic Pro automation menu",
-                10, getHeight() - 25, getWidth() - 20, 15, juce::Justification::centred, true);
-    g.drawText ("v0.1.0 - Phase 4B: Custom GUI", getWidth() - 200, getHeight() - 25, 190, 15,
-                juce::Justification::centredRight, true);
+    drawPanel (10, 440, 180, 160, "LFO 1");
+    drawPanel (200, 440, 180, 160, "LFO 2");
+    drawPanel (390, 440, 240, 160, "PITCH ENV");
+    drawPanel (640, 440, 550, 160, "EFFECTS");
 }
 
 void JP8080ControllerAudioProcessorEditor::resized()
@@ -199,15 +216,19 @@ void JP8080ControllerAudioProcessorEditor::resized()
     };
 
     // Row 1: Oscillator sections
-    // OSCILLATOR 1 (2 knobs)
+    // OSCILLATOR 1 knobs and waveform selector
     positionKnob (osc1Control1Knob, osc1Control1Label, 20, 100);
     positionKnob (osc1Control2Knob, osc1Control2Label, 100, 100);
+    osc1WaveformLabel.setBounds (20, 228, 70, 20);
+    osc1WaveformCombo.setBounds (95, 228, 90, 20);
 
-    // OSCILLATOR 2 (4 knobs)
+    // OSCILLATOR 2 knobs and waveform selector
     positionKnob (osc2RangeKnob, osc2RangeLabel, 220, 100);
     positionKnob (osc2FineKnob, osc2FineLabel, 300, 100);
     positionKnob (osc2Control1Knob, osc2Control1Label, 380, 100);
     positionKnob (osc2Control2Knob, osc2Control2Label, 460, 100);
+    osc2WaveformLabel.setBounds (220, 228, 70, 20);
+    osc2WaveformCombo.setBounds (295, 228, 90, 20);
 
     // OSC COMMON (3 knobs)
     positionKnob (oscBalanceKnob, oscBalanceLabel, 570, 100);
@@ -216,46 +237,48 @@ void JP8080ControllerAudioProcessorEditor::resized()
 
     // Row 2: Filter and Envelope sections (single row)
     // FILTER (4 knobs in one row)
-    positionKnob (filterCutoffKnob, filterCutoffLabel, 20, 270);
-    positionKnob (filterResonanceKnob, filterResonanceLabel, 100, 270);
-    positionKnob (filterKeyFollowKnob, filterKeyFollowLabel, 180, 270);
-    positionKnob (filterLfo1DepthKnob, filterLfo1DepthLabel, 260, 270);
+    positionKnob (filterCutoffKnob, filterCutoffLabel, 20, 280);
+    positionKnob (filterResonanceKnob, filterResonanceLabel, 100, 280);
+    positionKnob (filterKeyFollowKnob, filterKeyFollowLabel, 180, 280);
+    positionKnob (filterLfo1DepthKnob, filterLfo1DepthLabel, 260, 280);
 
     // FILTER ENVELOPE (5 knobs in one row)
-    positionKnob (filterEnvDepthKnob, filterEnvDepthLabel, 360, 270);
-    positionKnob (filterAttackKnob, filterAttackLabel, 440, 270);
-    positionKnob (filterDecayKnob, filterDecayLabel, 520, 270);
-    positionKnob (filterSustainKnob, filterSustainLabel, 600, 270);
-    positionKnob (filterReleaseKnob, filterReleaseLabel, 680, 270);
+    positionKnob (filterEnvDepthKnob, filterEnvDepthLabel, 360, 280);
+    positionKnob (filterAttackKnob, filterAttackLabel, 440, 280);
+    positionKnob (filterDecayKnob, filterDecayLabel, 520, 280);
+    positionKnob (filterSustainKnob, filterSustainLabel, 600, 280);
+    positionKnob (filterReleaseKnob, filterReleaseLabel, 680, 280);
 
     // AMP ENVELOPE (5 knobs in one row)
-    positionKnob (ampLevelKnob, ampLevelLabel, 780, 270);
-    positionKnob (ampAttackKnob, ampAttackLabel, 860, 270);
-    positionKnob (ampDecayKnob, ampDecayLabel, 940, 270);
-    positionKnob (ampSustainKnob, ampSustainLabel, 1020, 270);
-    positionKnob (ampReleaseKnob, ampReleaseLabel, 1100, 270);
+    positionKnob (ampLevelKnob, ampLevelLabel, 780, 280);
+    positionKnob (ampAttackKnob, ampAttackLabel, 860, 280);
+    positionKnob (ampDecayKnob, ampDecayLabel, 940, 280);
+    positionKnob (ampSustainKnob, ampSustainLabel, 1020, 280);
+    positionKnob (ampReleaseKnob, ampReleaseLabel, 1100, 280);
 
     // Row 3: LFO, Pitch Env, and Effects sections (single row)
-    // LFO 1 (2 knobs in one row)
-    positionKnob (lfo1RateKnob, lfo1RateLabel, 20, 430);
-    positionKnob (lfo1FadeKnob, lfo1FadeLabel, 100, 430);
+    // LFO 1 knobs and waveform selector
+    positionKnob (lfo1RateKnob, lfo1RateLabel, 20, 440);
+    positionKnob (lfo1FadeKnob, lfo1FadeLabel, 100, 440);
+    lfo1WaveformLabel.setBounds (20, 568, 70, 20);
+    lfo1WaveformCombo.setBounds (95, 568, 80, 20);
 
     // LFO 2 (2 knobs in one row)
-    positionKnob (lfo2RateKnob, lfo2RateLabel, 210, 430);
-    positionKnob (lfo2DepthKnob, lfo2DepthLabel, 290, 430);
+    positionKnob (lfo2RateKnob, lfo2RateLabel, 210, 440);
+    positionKnob (lfo2DepthKnob, lfo2DepthLabel, 290, 440);
 
     // PITCH ENV (3 knobs in one row)
-    positionKnob (pitchEnvDepthKnob, pitchEnvDepthLabel, 400, 430);
-    positionKnob (pitchEnvAttackKnob, pitchEnvAttackLabel, 480, 430);
-    positionKnob (pitchEnvDecayKnob, pitchEnvDecayLabel, 560, 430);
+    positionKnob (pitchEnvDepthKnob, pitchEnvDepthLabel, 400, 440);
+    positionKnob (pitchEnvAttackKnob, pitchEnvAttackLabel, 480, 440);
+    positionKnob (pitchEnvDecayKnob, pitchEnvDecayLabel, 560, 440);
 
     // EFFECTS (6 knobs in one row)
-    positionKnob (toneCtrlBassKnob, toneCtrlBassLabel, 650, 430);
-    positionKnob (toneCtrlTrebleKnob, toneCtrlTrebleLabel, 730, 430);
-    positionKnob (multiFxLevelKnob, multiFxLevelLabel, 810, 430);
-    positionKnob (delayTimeKnob, delayTimeLabel, 890, 430);
-    positionKnob (delayFeedbackKnob, delayFeedbackLabel, 970, 430);
-    positionKnob (delayLevelKnob, delayLevelLabel, 1050, 430);
+    positionKnob (toneCtrlBassKnob, toneCtrlBassLabel, 650, 440);
+    positionKnob (toneCtrlTrebleKnob, toneCtrlTrebleLabel, 730, 440);
+    positionKnob (multiFxLevelKnob, multiFxLevelLabel, 810, 440);
+    positionKnob (delayTimeKnob, delayTimeLabel, 890, 440);
+    positionKnob (delayFeedbackKnob, delayFeedbackLabel, 970, 440);
+    positionKnob (delayLevelKnob, delayLevelLabel, 1050, 440);
 }
 
 //==============================================================================

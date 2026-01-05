@@ -11,8 +11,10 @@ namespace JP8080Parameters
     // ========== OSCILLATOR SECTION ==========
     namespace Oscillator
     {
+        static const juce::String osc1Waveform    = "osc1_waveform";    // Waveform selector (SysEx)
         static const juce::String osc1Control1    = "osc1_control1";    // CC#4
         static const juce::String osc1Control2    = "osc1_control2";    // CC#76
+        static const juce::String osc2Waveform    = "osc2_waveform";    // Waveform selector (SysEx)
         static const juce::String osc2Range       = "osc2_range";       // CC#21 (MODE2)
         static const juce::String osc2FineWide    = "osc2_fine_wide";   // CC#77
         static const juce::String osc2Control1    = "osc2_control1";    // CC#78
@@ -21,6 +23,15 @@ namespace JP8080Parameters
         static const juce::String xModDepth       = "xmod_depth";       // CC#70
         static const juce::String oscLfo1Depth    = "osc_lfo1_depth";   // CC#18
     }
+
+    // Oscillator waveform options
+    static const juce::StringArray osc1WaveformNames = {
+        "SUPER SAW", "TRIANGLE MOD", "NOISE", "FEEDBACK OSC", "SQR (PWM)", "SAW", "TRI"
+    };
+
+    static const juce::StringArray osc2WaveformNames = {
+        "SQR (PWM)", "SAW", "TRI", "NOISE"
+    };
 
     // ========== PITCH ENVELOPE SECTION ==========
     namespace PitchEnv
@@ -58,6 +69,7 @@ namespace JP8080Parameters
     // ========== LFO SECTION ==========
     namespace LFO
     {
+        static const juce::String lfo1Waveform    = "lfo1_waveform";     // Waveform selector (SysEx)
         static const juce::String lfo1Rate        = "lfo1_rate";         // CC#16
         static const juce::String lfo1Fade        = "lfo1_fade";         // CC#20 (MODE2)
         static const juce::String lfo2Rate        = "lfo2_rate";         // CC#17
@@ -65,6 +77,11 @@ namespace JP8080Parameters
         static const juce::String lfo2FilterDepth = "lfo2_filter_depth"; // CC#23 (MODE2)
         static const juce::String lfo2AmpDepth    = "lfo2_amp_depth";    // CC#24 (MODE2)
     }
+
+    // LFO waveform options
+    static const juce::StringArray lfo1WaveformNames = {
+        "TRI", "SAW", "SQR", "S/H"
+    };
 
     // ========== EFFECTS SECTION ==========
     namespace Effects
@@ -347,8 +364,10 @@ namespace JP8080Parameters
     // ========== PARAMETER DISPLAY NAMES ==========
     static const std::map<juce::String, juce::String> displayNames = {
         // Oscillator
+        {Oscillator::osc1Waveform,    "OSC1 Waveform"},
         {Oscillator::osc1Control1,    "OSC1 Control 1"},
         {Oscillator::osc1Control2,    "OSC1 Control 2"},
+        {Oscillator::osc2Waveform,    "OSC2 Waveform"},
         {Oscillator::osc2Range,       "OSC2 Range"},
         {Oscillator::osc2FineWide,    "OSC2 Fine/Wide"},
         {Oscillator::osc2Control1,    "OSC2 Control 1"},
@@ -382,6 +401,7 @@ namespace JP8080Parameters
         {Amplifier::envRelease,       "Amp Env Release"},
 
         // LFO
+        {LFO::lfo1Waveform,           "LFO1 Waveform"},
         {LFO::lfo1Rate,               "LFO1 Rate"},
         {LFO::lfo1Fade,               "LFO1 Fade"},
         {LFO::lfo2Rate,               "LFO2 Rate"},
