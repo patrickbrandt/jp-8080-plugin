@@ -56,13 +56,13 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     createRotaryKnob(osc2Control2Knob, osc2Control2Label, Oscillator::osc2Control2, "Ctrl 2");
     createRotaryKnob(oscBalanceKnob, oscBalanceLabel, Oscillator::oscBalance, "Balance");
     createRotaryKnob(xModDepthKnob, xModDepthLabel, Oscillator::xModDepth, "X-Mod");
-    createRotaryKnob(oscLfo1DepthKnob, oscLfo1DepthLabel, Oscillator::oscLfo1Depth, "LFO Dpt");
+    createRotaryKnob(oscLfo1DepthKnob, oscLfo1DepthLabel, Oscillator::oscLfo1Depth, "LFO Depth");
 
     // Filter Section
     createRotaryKnob(filterCutoffKnob, filterCutoffLabel, Filter::cutoff, "Cutoff");
-    createRotaryKnob(filterResonanceKnob, filterResonanceLabel, Filter::resonance, "Reso");
-    createRotaryKnob(filterKeyFollowKnob, filterKeyFollowLabel, Filter::keyFollow, "Key Fol");
-    createRotaryKnob(filterLfo1DepthKnob, filterLfo1DepthLabel, Filter::lfo1Depth, "LFO Dpt");
+    createRotaryKnob(filterResonanceKnob, filterResonanceLabel, Filter::resonance, "Resonance");
+    createRotaryKnob(filterKeyFollowKnob, filterKeyFollowLabel, Filter::keyFollow, "Key Follow");
+    createRotaryKnob(filterLfo1DepthKnob, filterLfo1DepthLabel, Filter::lfo1Depth, "LFO Depth");
     createRotaryKnob(filterEnvDepthKnob, filterEnvDepthLabel, Filter::envDepth, "Depth");
 
     // Filter Envelope
@@ -92,10 +92,10 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     // Effects Section
     createRotaryKnob(toneCtrlBassKnob, toneCtrlBassLabel, Effects::toneCtrlBass, "Bass");
     createRotaryKnob(toneCtrlTrebleKnob, toneCtrlTrebleLabel, Effects::toneCtrlTreble, "Treble");
-    createRotaryKnob(multiFxLevelKnob, multiFxLevelLabel, Effects::multiFxLevel, "FX Lvl");
-    createRotaryKnob(delayTimeKnob, delayTimeLabel, Effects::delayTime, "Dly Tm");
-    createRotaryKnob(delayFeedbackKnob, delayFeedbackLabel, Effects::delayFeedback, "Dly FB");
-    createRotaryKnob(delayLevelKnob, delayLevelLabel, Effects::delayLevel, "Dly Lv");
+    createRotaryKnob(multiFxLevelKnob, multiFxLevelLabel, Effects::multiFxLevel, "FX Level");
+    createRotaryKnob(delayTimeKnob, delayTimeLabel, Effects::delayTime, "Delay Time");
+    createRotaryKnob(delayFeedbackKnob, delayFeedbackLabel, Effects::delayFeedback, "Delay Feedback");
+    createRotaryKnob(delayLevelKnob, delayLevelLabel, Effects::delayLevel, "Delay Level");
 }
 
 JP8080ControllerAudioProcessorEditor::~JP8080ControllerAudioProcessorEditor()
