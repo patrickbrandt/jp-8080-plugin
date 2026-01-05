@@ -2,6 +2,9 @@
 
 An Audio Unit (AU) plugin for Logic Pro that provides a graphical interface to control the Roland JP-8080 hardware synthesizer via MIDI CC messages.
 
+<img width="2386" height="1252" alt="image" src="https://github.com/user-attachments/assets/20f6db46-a4b7-4ec7-b4d9-55be39c0e63e" />
+
+
 ## Technology Stack
 
 - **Recommended**: JUCE Framework (C++ with excellent Audio Unit support)
