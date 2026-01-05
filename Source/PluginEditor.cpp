@@ -86,8 +86,8 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
 
     // Pitch Envelope Section
     createRotaryKnob(pitchEnvDepthKnob, pitchEnvDepthLabel, PitchEnv::depth, "Depth");
-    createRotaryKnob(pitchEnvAttackKnob, pitchEnvAttackLabel, PitchEnv::attack, "A");
-    createRotaryKnob(pitchEnvDecayKnob, pitchEnvDecayLabel, PitchEnv::decay, "D");
+    createRotaryKnob(pitchEnvAttackKnob, pitchEnvAttackLabel, PitchEnv::attack, "Attack");
+    createRotaryKnob(pitchEnvDecayKnob, pitchEnvDecayLabel, PitchEnv::decay, "Decay");
 
     // Effects Section
     createRotaryKnob(toneCtrlBassKnob, toneCtrlBassLabel, Effects::toneCtrlBass, "Bass");
