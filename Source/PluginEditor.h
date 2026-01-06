@@ -37,6 +37,10 @@ private:
     void updatePatchNamesForCurrentBank();
 
     // MIDI Configuration Controls
+    juce::Label midiOutputLabel;
+    juce::ComboBox midiOutputCombo;
+    void populateMidiOutputList();
+
     juce::Label midiChannelLabel;
     juce::ComboBox midiChannelCombo;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> midiChannelAttachment;

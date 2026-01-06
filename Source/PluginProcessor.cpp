@@ -17,10 +17,126 @@ JP8080ControllerAudioProcessor::JP8080ControllerAudioProcessor()
 #endif
        apvts (*this, nullptr, "Parameters", createParameterLayout())
 {
+    using namespace JP8080Parameters;
+
+    // Add listeners for waveform parameters
+    apvts.addParameterListener(Oscillator::osc1Waveform, this);
+    apvts.addParameterListener(Oscillator::osc2Waveform, this);
+    apvts.addParameterListener(LFO::lfo1Waveform, this);
+
 }
 
 JP8080ControllerAudioProcessor::~JP8080ControllerAudioProcessor()
 {
+    using namespace JP8080Parameters;
+
+    // Remove parameter listeners
+    apvts.removeParameterListener(Oscillator::osc1Waveform, this);
+    apvts.removeParameterListener(Oscillator::osc2Waveform, this);
+    apvts.removeParameterListener(LFO::lfo1Waveform, this);
+
+    // Close direct MIDI output
+    if (directMidiOutput)
+        directMidiOutput.reset();
+}
+
+//==============================================================================
+// Direct MIDI Output (bypasses DAW routing for SysEx)
+
+juce::Array<juce::MidiDeviceInfo> JP8080ControllerAudioProcessor::getAvailableMidiOutputs() const
+{
+    return juce::MidiOutput::getAvailableDevices();
+}
+
+juce::String JP8080ControllerAudioProcessor::getSelectedMidiOutputName() const
+{
+    if (directMidiOutput)
+        return directMidiOutput->getName();
+
+    if (selectedMidiOutputId.isEmpty())
+        return "No device selected";
+
+    // Try to find the name from the ID
+    auto devices = juce::MidiOutput::getAvailableDevices();
+    for (const auto& device : devices)
+    {
+        if (device.identifier == selectedMidiOutputId)
+            return device.name;
+    }
+
+    return "Device not found";
+}
+
+void JP8080ControllerAudioProcessor::setSelectedMidiOutput(const juce::String& deviceId)
+{
+    if (deviceId == selectedMidiOutputId && directMidiOutput != nullptr)
+        return; // Already using this device
+
+    selectedMidiOutputId = deviceId;
+
+    // Close existing output
+    if (directMidiOutput)
+        directMidiOutput.reset();
+
+    // Open new output
+    if (deviceId.isNotEmpty())
+    {
+        directMidiOutput = juce::MidiOutput::openDevice(deviceId);
+    }
+}
+
+void JP8080ControllerAudioProcessor::refreshMidiOutput()
+{
+    // Re-open the currently selected device (useful if devices change)
+    if (selectedMidiOutputId.isNotEmpty())
+    {
+        if (directMidiOutput)
+            directMidiOutput.reset();
+
+        directMidiOutput = juce::MidiOutput::openDevice(selectedMidiOutputId);
+    }
+}
+
+void JP8080ControllerAudioProcessor::sendSysExDirect(const std::vector<uint8_t>& sysexData)
+{
+    if (!directMidiOutput)
+        return;
+
+    // Create the MIDI message (JUCE adds F0/F7 automatically)
+    auto message = juce::MidiMessage::createSysExMessage(sysexData.data(), static_cast<int>(sysexData.size()));
+    directMidiOutput->sendMessageNow(message);
+}
+
+//==============================================================================
+// Parameter Change Listener
+
+void JP8080ControllerAudioProcessor::parameterChanged (const juce::String& parameterID, float newValue)
+{
+    juce::ignoreUnused(newValue);
+    using namespace JP8080Parameters;
+
+    // Check if this is a waveform parameter
+    if (parameterID == Oscillator::osc1Waveform ||
+        parameterID == Oscillator::osc2Waveform ||
+        parameterID == LFO::lfo1Waveform)
+    {
+        // Get the choice parameter to convert normalized value to index
+        auto* param = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(parameterID));
+        if (param != nullptr)
+        {
+            int valueIndex = param->getIndex();
+
+            // Queue the change for processing in processBlock
+            int writeIndex1, writeSize1, writeIndex2, writeSize2;
+            waveformChangeFifo.prepareToWrite(1, writeIndex1, writeSize1, writeIndex2, writeSize2);
+
+            if (writeSize1 > 0)
+            {
+                waveformChangeBuffer[writeIndex1] = { parameterID, valueIndex };
+                waveformChangeFifo.finishedWrite(1);
+            }
+        }
+    }
 }
 
 //==============================================================================
@@ -155,15 +271,14 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
         }
     }
 
-    // Check waveform parameters and send SysEx if changed
-    // These parameters use SysEx instead of MIDI CC
-    const juce::StringArray waveformParams = {
+    // Check waveform parameters and send SysEx via direct MIDI output
+    const std::array<juce::String, 3> waveformParamIDs = {
         Oscillator::osc1Waveform,
         Oscillator::osc2Waveform,
         LFO::lfo1Waveform
     };
 
-    for (const auto& paramID : waveformParams)
+    for (const auto& paramID : waveformParamIDs)
     {
         auto* param = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(paramID));
         if (param != nullptr)
@@ -192,8 +307,10 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
         auto* param = apvts.getParameter(paramID);
         if (param != nullptr)
         {
-            // Skip waveform parameters (handled above with SysEx)
-            if (waveformParams.contains(paramID))
+            // Skip waveform parameters (handled above with SysEx via parameter listener)
+            if (paramID == Oscillator::osc1Waveform ||
+                paramID == Oscillator::osc2Waveform ||
+                paramID == LFO::lfo1Waveform)
                 continue;
 
             // Get normalized value (0.0-1.0) and convert to MIDI range (0-127)
@@ -358,6 +475,10 @@ void JP8080ControllerAudioProcessor::getStateInformation (juce::MemoryBlock& des
 {
     // Save parameter state to memory block
     auto state = apvts.copyState();
+
+    // Add MIDI output selection to state
+    state.setProperty("midiOutputId", selectedMidiOutputId, nullptr);
+
     std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -368,8 +489,21 @@ void JP8080ControllerAudioProcessor::setStateInformation (const void* data, int 
     std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
 
     if (xmlState.get() != nullptr)
+    {
         if (xmlState->hasTagName (apvts.state.getType()))
-            apvts.replaceState (juce::ValueTree::fromXml (*xmlState));
+        {
+            auto newState = juce::ValueTree::fromXml (*xmlState);
+
+            // Restore MIDI output selection
+            if (newState.hasProperty("midiOutputId"))
+            {
+                juce::String midiOutputId = newState.getProperty("midiOutputId").toString();
+                setSelectedMidiOutput(midiOutputId);
+            }
+
+            apvts.replaceState (newState);
+        }
+    }
 }
 
 //==============================================================================
@@ -491,9 +625,8 @@ void JP8080ControllerAudioProcessor::sendWaveformSysEx (juce::MidiBuffer& midiMe
     // Calculate checksum
     uint8_t checksum = calculateRolandChecksum(addressAndData);
 
-    // Build complete SysEx message
-    std::vector<uint8_t> sysexMessage = {
-        0xF0,           // SysEx start
+    // Build SysEx message data (WITHOUT F0 and F7 - JUCE adds those automatically)
+    std::vector<uint8_t> sysexData = {
         ROLAND_ID,      // Roland manufacturer ID
         DEVICE_ID,      // Device ID
         MODEL_ID_MSB,   // Model ID MSB
@@ -504,11 +637,11 @@ void JP8080ControllerAudioProcessor::sendWaveformSysEx (juce::MidiBuffer& midiMe
         ADDR_BYTE3,     // Address byte 3
         addrByte4,      // Address byte 4
         static_cast<uint8_t>(waveformValue), // Data
-        checksum,       // Checksum
-        0xF7            // SysEx end
+        checksum        // Checksum
     };
 
-    sendSysExMessage(midiMessages, sysexMessage);
+    // Send via direct MIDI output (bypasses DAW routing which filters SysEx)
+    sendSysExDirect(sysexData);
 }
 
 //==============================================================================

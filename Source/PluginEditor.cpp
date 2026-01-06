@@ -14,6 +14,16 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     setLookAndFeel(&jp8080LookAndFeel);
 
     // MIDI Configuration Controls
+
+    // MIDI Output Device Selector (for SysEx)
+    midiOutputLabel.setText ("MIDI Output:", juce::dontSendNotification);
+    midiOutputLabel.setJustificationType (juce::Justification::centredRight);
+    addAndMakeVisible (midiOutputLabel);
+
+    midiOutputCombo.addListener (this);
+    addAndMakeVisible (midiOutputCombo);
+    populateMidiOutputList();
+
     midiChannelLabel.setText ("MIDI Channel:", juce::dontSendNotification);
     midiChannelLabel.setJustificationType (juce::Justification::centredRight);
     addAndMakeVisible (midiChannelLabel);
@@ -125,6 +135,7 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
 
 JP8080ControllerAudioProcessorEditor::~JP8080ControllerAudioProcessorEditor()
 {
+    midiOutputCombo.removeListener(this);
     patchBankCombo.removeListener(this);
     setLookAndFeel(nullptr);
 }
@@ -193,8 +204,17 @@ void JP8080ControllerAudioProcessorEditor::resized()
     // Header area for MIDI config
     auto headerArea = bounds.removeFromTop (70);
     headerArea.removeFromLeft (250); // Skip title area
-    headerArea.reduce (10, 15);
+    headerArea.reduce (10, 10);
 
+    // First row: MIDI Output selector
+    auto midiOutputRow = headerArea.removeFromTop (20);
+    midiOutputLabel.setBounds (midiOutputRow.removeFromLeft (85));
+    midiOutputRow.removeFromLeft (5);
+    midiOutputCombo.setBounds (midiOutputRow.removeFromLeft (250));
+
+    headerArea.removeFromTop (5); // Spacing between rows
+
+    // Second row: MIDI Channel, Bank, Patch
     auto midiRow = headerArea.removeFromTop (20);
     midiChannelLabel.setBounds (midiRow.removeFromLeft (90));
     midiRow.removeFromLeft (5);
@@ -414,11 +434,71 @@ void JP8080ControllerAudioProcessorEditor::createRotaryKnob(juce::Slider& slider
 }
 
 //==============================================================================
+void JP8080ControllerAudioProcessorEditor::populateMidiOutputList()
+{
+    midiOutputCombo.clear(juce::dontSendNotification);
+
+    // Add "None" option
+    midiOutputCombo.addItem("-- Select MIDI Output --", 1);
+
+    // Get available MIDI outputs
+    auto midiOutputs = audioProcessor.getAvailableMidiOutputs();
+
+    int itemId = 2;
+    for (const auto& device : midiOutputs)
+    {
+        midiOutputCombo.addItem(device.name, itemId);
+        itemId++;
+    }
+
+    // Select currently selected device
+    juce::String currentId = audioProcessor.getSelectedMidiOutputId();
+    if (currentId.isEmpty())
+    {
+        midiOutputCombo.setSelectedId(1, juce::dontSendNotification); // "None" selected
+    }
+    else
+    {
+        // Find the device in the list
+        int index = 2;
+        for (const auto& device : midiOutputs)
+        {
+            if (device.identifier == currentId)
+            {
+                midiOutputCombo.setSelectedId(index, juce::dontSendNotification);
+                break;
+            }
+            index++;
+        }
+    }
+}
+
 void JP8080ControllerAudioProcessorEditor::comboBoxChanged(juce::ComboBox* comboBox)
 {
     if (comboBox == &patchBankCombo)
     {
         updatePatchNamesForCurrentBank();
+    }
+    else if (comboBox == &midiOutputCombo)
+    {
+        int selectedId = midiOutputCombo.getSelectedId();
+
+        if (selectedId <= 1)
+        {
+            // "None" selected - clear the output
+            audioProcessor.setSelectedMidiOutput("");
+        }
+        else
+        {
+            // Find the device by index
+            auto midiOutputs = audioProcessor.getAvailableMidiOutputs();
+            int index = selectedId - 2; // Offset for "None" item
+
+            if (index >= 0 && index < midiOutputs.size())
+            {
+                audioProcessor.setSelectedMidiOutput(midiOutputs[index].identifier);
+            }
+        }
     }
 }
 
