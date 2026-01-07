@@ -113,7 +113,9 @@ private:
                                                                             pitchEnvDecayAttachment;
 
     // Effects Section
-    juce::Label toneCtrlBassLabel, toneCtrlTrebleLabel, multiFxLevelLabel, delayTimeLabel, delayFeedbackLabel, delayLevelLabel;
+    juce::Label toneCtrlBassLabel, toneCtrlTrebleLabel, multiFxTypeLabel, multiFxLevelLabel, delayTypeLabel, delayTimeLabel, delayFeedbackLabel, delayLevelLabel;
+    juce::ComboBox multiFxTypeCombo, delayTypeCombo;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> multiFxTypeAttachment, delayTypeAttachment;
     juce::Slider toneCtrlBassKnob, toneCtrlTrebleKnob, multiFxLevelKnob, delayTimeKnob, delayFeedbackKnob, delayLevelKnob;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> toneCtrlBassAttachment, toneCtrlTrebleAttachment,
                                                                             multiFxLevelAttachment, delayTimeAttachment,

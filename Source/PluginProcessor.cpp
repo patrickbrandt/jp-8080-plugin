@@ -271,14 +271,16 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
         }
     }
 
-    // Check waveform parameters and send SysEx via direct MIDI output
-    const std::array<juce::String, 3> waveformParamIDs = {
+    // Check waveform and effect type parameters and send SysEx via direct MIDI output
+    const std::array<juce::String, 5> sysexParamIDs = {
         Oscillator::osc1Waveform,
         Oscillator::osc2Waveform,
-        LFO::lfo1Waveform
+        LFO::lfo1Waveform,
+        Effects::multiFxType,
+        Effects::delayType
     };
 
-    for (const auto& paramID : waveformParamIDs)
+    for (const auto& paramID : sysexParamIDs)
     {
         auto* param = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(paramID));
         if (param != nullptr)
@@ -307,10 +309,12 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
         auto* param = apvts.getParameter(paramID);
         if (param != nullptr)
         {
-            // Skip waveform parameters (handled above with SysEx via parameter listener)
+            // Skip SysEx parameters (handled above with SysEx)
             if (paramID == Oscillator::osc1Waveform ||
                 paramID == Oscillator::osc2Waveform ||
-                paramID == LFO::lfo1Waveform)
+                paramID == LFO::lfo1Waveform ||
+                paramID == Effects::multiFxType ||
+                paramID == Effects::delayType)
                 continue;
 
             // Get normalized value (0.0-1.0) and convert to MIDI range (0-127)
@@ -431,10 +435,20 @@ JP8080ControllerAudioProcessor::createParameterLayout()
     layout.add(createStandardParam(LFO::lfo2FilterDepth, getDisplayName(LFO::lfo2FilterDepth)));
     layout.add(createStandardParam(LFO::lfo2AmpDepth, getDisplayName(LFO::lfo2AmpDepth)));
 
-    // EFFECTS SECTION (6 params)
+    // EFFECTS SECTION (8 params - added 2 effect type selectors)
     layout.add(createStandardParam(Effects::toneCtrlBass, getDisplayName(Effects::toneCtrlBass)));
     layout.add(createStandardParam(Effects::toneCtrlTreble, getDisplayName(Effects::toneCtrlTreble)));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        Effects::multiFxType,
+        getDisplayName(Effects::multiFxType),
+        multiFxTypeNames,
+        0)); // Default: SUPER CHORUS SLW
     layout.add(createStandardParam(Effects::multiFxLevel, getDisplayName(Effects::multiFxLevel), 64.0f));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        Effects::delayType,
+        getDisplayName(Effects::delayType),
+        delayTypeNames,
+        0)); // Default: PANNING L->R
     layout.add(createStandardParam(Effects::delayTime, getDisplayName(Effects::delayTime), 0.0f));
     layout.add(createStandardParam(Effects::delayFeedback, getDisplayName(Effects::delayFeedback), 0.0f));
     layout.add(createStandardParam(Effects::delayLevel, getDisplayName(Effects::delayLevel), 0.0f));
@@ -613,6 +627,10 @@ void JP8080ControllerAudioProcessor::sendWaveformSysEx (juce::MidiBuffer& midiMe
         addrByte4 = 0x1E; // OSC1 Waveform offset
     else if (paramID == Oscillator::osc2Waveform)
         addrByte4 = 0x21; // OSC2 Waveform offset
+    else if (paramID == Effects::multiFxType)
+        addrByte4 = 0x3D; // Multi-FX Type offset
+    else if (paramID == Effects::delayType)
+        addrByte4 = 0x3F; // Delay Type offset
     else
         return; // Unknown parameter, don't send
 

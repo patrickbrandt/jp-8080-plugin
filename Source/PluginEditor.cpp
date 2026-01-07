@@ -127,7 +127,25 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     // Effects Section
     createRotaryKnob(toneCtrlBassKnob, toneCtrlBassLabel, Effects::toneCtrlBass, "Bass");
     createRotaryKnob(toneCtrlTrebleKnob, toneCtrlTrebleLabel, Effects::toneCtrlTreble, "Treble");
+
+    multiFxTypeLabel.setText("Multi-FX:", juce::dontSendNotification);
+    multiFxTypeLabel.setJustificationType(juce::Justification::centredRight);
+    addAndMakeVisible(multiFxTypeLabel);
+    multiFxTypeCombo.addItemList(multiFxTypeNames, 1);
+    addAndMakeVisible(multiFxTypeCombo);
+    multiFxTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), Effects::multiFxType, multiFxTypeCombo);
+
     createRotaryKnob(multiFxLevelKnob, multiFxLevelLabel, Effects::multiFxLevel, "FX Level");
+
+    delayTypeLabel.setText("Delay:", juce::dontSendNotification);
+    delayTypeLabel.setJustificationType(juce::Justification::centredRight);
+    addAndMakeVisible(delayTypeLabel);
+    delayTypeCombo.addItemList(delayTypeNames, 1);
+    addAndMakeVisible(delayTypeCombo);
+    delayTypeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), Effects::delayType, delayTypeCombo);
+
     createRotaryKnob(delayTimeKnob, delayTimeLabel, Effects::delayTime, "Delay Time");
     createRotaryKnob(delayFeedbackKnob, delayFeedbackLabel, Effects::delayFeedback, "Delay Feedback");
     createRotaryKnob(delayLevelKnob, delayLevelLabel, Effects::delayLevel, "Delay Level");
@@ -292,10 +310,14 @@ void JP8080ControllerAudioProcessorEditor::resized()
     positionKnob (pitchEnvAttackKnob, pitchEnvAttackLabel, 480, 440);
     positionKnob (pitchEnvDecayKnob, pitchEnvDecayLabel, 560, 440);
 
-    // EFFECTS (6 knobs in one row)
+    // EFFECTS (6 knobs in one row + 2 type selectors)
     positionKnob (toneCtrlBassKnob, toneCtrlBassLabel, 650, 440);
     positionKnob (toneCtrlTrebleKnob, toneCtrlTrebleLabel, 730, 440);
+    multiFxTypeLabel.setBounds (650, 568, 70, 20);
+    multiFxTypeCombo.setBounds (725, 568, 165, 20);
     positionKnob (multiFxLevelKnob, multiFxLevelLabel, 810, 440);
+    delayTypeLabel.setBounds (890, 568, 50, 20);
+    delayTypeCombo.setBounds (945, 568, 155, 20);
     positionKnob (delayTimeKnob, delayTimeLabel, 890, 440);
     positionKnob (delayFeedbackKnob, delayFeedbackLabel, 970, 440);
     positionKnob (delayLevelKnob, delayLevelLabel, 1050, 440);

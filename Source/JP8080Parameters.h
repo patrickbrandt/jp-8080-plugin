@@ -88,11 +88,27 @@ namespace JP8080Parameters
     {
         static const juce::String toneCtrlBass    = "tone_ctrl_bass";    // CC#92
         static const juce::String toneCtrlTreble  = "tone_ctrl_treble";  // CC#95
+        static const juce::String multiFxType     = "multi_fx_type";     // Effect type selector (SysEx)
         static const juce::String multiFxLevel    = "multi_fx_level";    // CC#93
+        static const juce::String delayType       = "delay_type";        // Delay type selector (SysEx)
         static const juce::String delayTime       = "delay_time";        // CC#12
         static const juce::String delayFeedback   = "delay_feedback";    // CC#13
         static const juce::String delayLevel      = "delay_level";       // CC#94
     }
+
+    // Multi-FX Type options
+    static const juce::StringArray multiFxTypeNames = {
+        "SUPER CHORUS SLW", "SUPER CHORUS MID", "SUPER CHORUS FST", "SUPER CHORUS CLR",
+        "FLANGER SLOW", "FLANGER DEEP", "FLANGER FAST",
+        "DEEP PHASING SLW", "JET PHASING", "TWISTING",
+        "FREEZE PHASE 1", "FREEZE PHASE 2", "DISTORTION"
+    };
+
+    // Delay Type options
+    static const juce::StringArray delayTypeNames = {
+        "PANNING L->R", "PANNING R->L", "PANNING SHORT",
+        "MONO SHORT", "MONO LONG"
+    };
 
     // ========== CONTROL SECTION ==========
     namespace Control
@@ -412,7 +428,9 @@ namespace JP8080Parameters
         // Effects
         {Effects::toneCtrlBass,       "Tone Control Bass"},
         {Effects::toneCtrlTreble,     "Tone Control Treble"},
+        {Effects::multiFxType,        "Multi-FX Type"},
         {Effects::multiFxLevel,       "Multi-FX Level"},
+        {Effects::delayType,          "Delay Type"},
         {Effects::delayTime,          "Delay Time"},
         {Effects::delayFeedback,      "Delay Feedback"},
         {Effects::delayLevel,         "Delay Level"},
