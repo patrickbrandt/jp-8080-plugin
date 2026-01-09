@@ -124,10 +124,16 @@ namespace JP8080Parameters
     // ========== MIDI CONFIGURATION ==========
     namespace MidiConfig
     {
-        static const juce::String midiChannel     = "midi_channel";      // MIDI channel (1-16)
+        static const juce::String part            = "part";              // Upper/Lower part selection (also sets MIDI channel: Upper=1, Lower=2)
         static const juce::String patchBank       = "patch_bank";        // Patch bank selection
         static const juce::String patchProgram    = "patch_program";     // Program number (1-128)
     }
+
+    // Part selection options (for multi-instance support)
+    static const juce::StringArray partNames = {
+        "Upper",
+        "Lower"
+    };
 
     // ========== PATCH BANK DEFINITIONS ==========
     enum class PatchBank
@@ -444,7 +450,7 @@ namespace JP8080Parameters
         {Control::pan,                "Pan"},
 
         // MIDI Configuration
-        {MidiConfig::midiChannel,     "MIDI Channel"},
+        {MidiConfig::part,            "Part"},
         {MidiConfig::patchBank,       "Patch Bank"},
         {MidiConfig::patchProgram,    "Patch Program"}
     };
@@ -503,7 +509,7 @@ namespace JP8080Parameters
     // Helper function to check if parameter is a MIDI configuration (not a CC parameter)
     inline bool isMidiConfigParameter(const juce::String& paramID)
     {
-        return paramID == MidiConfig::midiChannel ||
+        return paramID == MidiConfig::part ||
                paramID == MidiConfig::patchBank ||
                paramID == MidiConfig::patchProgram;
     }

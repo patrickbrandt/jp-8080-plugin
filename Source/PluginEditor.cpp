@@ -24,15 +24,14 @@ JP8080ControllerAudioProcessorEditor::JP8080ControllerAudioProcessorEditor (JP80
     addAndMakeVisible (midiOutputCombo);
     populateMidiOutputList();
 
-    midiChannelLabel.setText ("MIDI Channel:", juce::dontSendNotification);
-    midiChannelLabel.setJustificationType (juce::Justification::centredRight);
-    addAndMakeVisible (midiChannelLabel);
+    partLabel.setText ("Part:", juce::dontSendNotification);
+    partLabel.setJustificationType (juce::Justification::centredRight);
+    addAndMakeVisible (partLabel);
 
-    midiChannelCombo.addItemList ({"1", "2", "3", "4", "5", "6", "7", "8",
-                                    "9", "10", "11", "12", "13", "14", "15", "16"}, 1);
-    addAndMakeVisible (midiChannelCombo);
-    midiChannelAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
-        audioProcessor.getValueTreeState(), MidiConfig::midiChannel, midiChannelCombo);
+    partCombo.addItemList (partNames, 1);
+    addAndMakeVisible (partCombo);
+    partAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
+        audioProcessor.getValueTreeState(), MidiConfig::part, partCombo);
 
     patchBankLabel.setText ("Patch:", juce::dontSendNotification);
     patchBankLabel.setJustificationType (juce::Justification::centredRight);
@@ -232,11 +231,11 @@ void JP8080ControllerAudioProcessorEditor::resized()
 
     headerArea.removeFromTop (5); // Spacing between rows
 
-    // Second row: MIDI Channel, Bank, Patch
+    // Second row: Part, Bank, Patch (MIDI channel derived from Part: Upper=Ch1, Lower=Ch2)
     auto midiRow = headerArea.removeFromTop (20);
-    midiChannelLabel.setBounds (midiRow.removeFromLeft (90));
+    partLabel.setBounds (midiRow.removeFromLeft (35));
     midiRow.removeFromLeft (5);
-    midiChannelCombo.setBounds (midiRow.removeFromLeft (60));
+    partCombo.setBounds (midiRow.removeFromLeft (70));
     midiRow.removeFromLeft (15);
     patchBankLabel.setBounds (midiRow.removeFromLeft (50));
     midiRow.removeFromLeft (5);

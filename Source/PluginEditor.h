@@ -41,9 +41,9 @@ private:
     juce::ComboBox midiOutputCombo;
     void populateMidiOutputList();
 
-    juce::Label midiChannelLabel;
-    juce::ComboBox midiChannelCombo;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> midiChannelAttachment;
+    juce::Label partLabel;
+    juce::ComboBox partCombo;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> partAttachment;
 
     juce::Label patchBankLabel;
     juce::ComboBox patchBankCombo;

@@ -248,10 +248,10 @@ void JP8080ControllerAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     // MIDI output processing
     using namespace JP8080Parameters;
 
-    // Get current MIDI channel from parameter (1-16)
-    auto* channelParam = apvts.getParameter(MidiConfig::midiChannel);
-    int currentMidiChannel = channelParam != nullptr ?
-        static_cast<int>(channelParam->getValue() * 15.0f) + 1 : 1; // Convert 0.0-1.0 to 1-16
+    // Get Part selection and derive MIDI channel (Upper=1, Lower=2)
+    auto* partParam = apvts.getParameter(MidiConfig::part);
+    int partIndex = partParam != nullptr ? static_cast<int>(partParam->getValue() + 0.5f) : 0;
+    int currentMidiChannel = (partIndex == 0) ? 1 : 2; // Upper=Ch1, Lower=Ch2
 
     // Check for Bank Select + Program Change
     auto* bankParam = apvts.getParameter(MidiConfig::patchBank);
@@ -462,11 +462,13 @@ JP8080ControllerAudioProcessor::createParameterLayout()
     layout.add(createStandardParam(Control::pan, getDisplayName(Control::pan), 64.0f));
 
     // MIDI CONFIGURATION
-    // MIDI Channel: 1-16
-    layout.add(std::make_unique<juce::AudioParameterInt>(
-        MidiConfig::midiChannel,
-        getDisplayName(MidiConfig::midiChannel),
-        1, 16, 1)); // Range: 1-16, default: 1
+    // Part Selection (Upper/Lower for multi-instance support)
+    // MIDI channel is derived from Part: Upper=1, Lower=2
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        MidiConfig::part,
+        getDisplayName(MidiConfig::part),
+        partNames,
+        0)); // Default: Upper
 
     // Patch Bank Selection
     layout.add(std::make_unique<juce::AudioParameterChoice>(
@@ -613,11 +615,17 @@ void JP8080ControllerAudioProcessor::sendWaveformSysEx (juce::MidiBuffer& midiMe
     const uint8_t MODEL_ID_LSB = 0x06;
     const uint8_t DT1_COMMAND = 0x12;
 
-    // Temporary Performance Patch (Upper) base address: 01 00 40 00
-    // We'll use Upper part for now
+    // Temporary Performance Patch base addresses:
+    // Upper part: 01 00 40 xx
+    // Lower part: 01 00 41 xx
     const uint8_t ADDR_BYTE1 = 0x01;
     const uint8_t ADDR_BYTE2 = 0x00;
-    const uint8_t ADDR_BYTE3 = 0x40; // Upper part
+
+    // Get part selection (0 = Upper, 1 = Lower)
+    auto* partParam = apvts.getParameter(MidiConfig::part);
+    int partIndex = partParam != nullptr ? static_cast<int>(partParam->getValue() + 0.5f) : 0;
+    const uint8_t ADDR_BYTE3 = (partIndex == 0) ? 0x40 : 0x41; // Upper or Lower
+
     uint8_t addrByte4 = 0x00;
 
     // Determine the parameter offset based on parameter ID
